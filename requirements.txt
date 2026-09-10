@@ -1,0 +1,8 @@
+          flask
+          flask-cors
+          flask-socketio
+          pandas
+          numpy
+          websocket-client
+          requests
+          tzdata
