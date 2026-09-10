@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Meu Script — IQ Option</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff88;
+    --red: #ff3b5c;
+    --blue: #00c3ff;
+    --purple: #a855f7;
+    --yellow: #f59e0b;
+    --bg: #060b14;
+    --bg2: #0a1120;
+    --bg3: #0d1830;
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(0,255,136,0.15);
+    --glow-green: 0 0 20px rgba(0,255,136,0.4);
+    --glow-blue: 0 0 20px rgba(0,195,255,0.4);
+    --glow-red: 0 0 20px rgba(255,59,92,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes gridMove {
+    0%   { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+  #particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .particle {
+    position:absolute; width:2px; height:2px;
+    background:var(--green); border-radius:50%;
+    animation:float linear infinite; opacity:0;
+  }
+  @keyframes float {
+    0%   { transform:translateY(100vh) translateX(0); opacity:0; }
+    10%  { opacity:0.6; }
+    90%  { opacity:0.6; }
+    100% { transform:translateY(-100px) translateX(50px); opacity:0; }
+  }
+  header {
+    position:relative; z-index:10;
+    background:linear-gradient(180deg,rgba(0,0,0,0.9) 0%,rgba(6,11,20,0.8) 100%);
+    backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+    padding:16px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .header-logo { display:flex; align-items:center; gap:12px; }
+  .logo-icon {
+    width:44px; height:44px;
+    background:linear-gradient(135deg,var(--green),var(--blue));
+    border-radius:12px; display:flex; align-items:center;
+    justify-content:center; font-size:22px;
+    box-shadow:var(--glow-green);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow:0 0 20px rgba(0,255,136,0.4); }
+    50%      { box-shadow:0 0 40px rgba(0,255,136,0.8),0 0 60px rgba(0,255,136,0.3); }
+  }
+  .logo-text {
+    font-family:'Orbitron',monospace; font-size:16px; font-weight:900;
+    background:linear-gradient(90deg,var(--green),var(--blue));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    letter-spacing:2px;
+  }
+  .logo-sub {
+    font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:3px;
+    font-family:'Rajdhani',sans-serif; -webkit-text-fill-color:rgba(255,255,255,0.4);
+  }
+  .brasilia-clock {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-width:112px; padding:6px 10px; margin-left:auto; margin-right:16px;
+    border:1px solid rgba(0,255,136,0.22); border-radius:10px;
+    background:rgba(0,255,136,0.06); color:var(--green);
+  }
+  .brasilia-clock-label { font-size:8px; letter-spacing:2px; color:rgba(255,255,255,0.45); }
+  .brasilia-clock-time { font-family:'Orbitron',monospace; font-size:14px; letter-spacing:1px; line-height:1.4; }
+  .status-dot { display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,255,255,0.5); }
+  @media (max-width:520px) {
+    .brasilia-clock { min-width:96px; margin-right:8px; padding:5px 7px; }
+    .brasilia-clock-time { font-size:11px; letter-spacing:0.5px; }
+    .brasilia-clock-label { font-size:7px; letter-spacing:1.4px; }
+    .status-dot span { display:none; }
+  }
+  .dot { width:8px; height:8px; border-radius:50%; background:#ef4444; transition:all 0.3s; }
+  .dot.active { background:var(--green); box-shadow:0 0 10px var(--green); animation:blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .app { position:relative; z-index:5; max-width:480px; margin:0 auto; padding:16px; padding-bottom:100px; }
+  .card {
+    background:var(--card); backdrop-filter:blur(20px);
+    border:1px solid var(--border); border-radius:20px;
+    padding:20px; margin-bottom:16px;
+    position:relative; overflow:hidden; transition:all 0.3s;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+    opacity:0.5;
+  }
+  .card:hover { border-color:rgba(0,255,136,0.3); transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,255,136,0.1); }
+  .card-title {
+    font-family:'Orbitron',monospace; font-size:11px; letter-spacing:3px;
+    color:var(--green); margin-bottom:16px; display:flex; align-items:center; gap:8px;
+  }
+  .card-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+  .input-group { position:relative; margin-bottom:12px; }
+  .input-label { font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:2px; margin-bottom:6px; display:block; font-family:'Orbitron',monospace; }
+  input, select {
+    width:100%; padding:14px 16px;
+    background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px; color:white;
+    font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:500;
+    outline:none; transition:all 0.3s; -webkit-appearance:none;
+  }
+  input:focus, select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(0,255,136,0.1); background:rgba(0,255,136,0.05); }
+  input::placeholder { color:rgba(255,255,255,0.2); }
+  select option { background:#0a1120; color:white; }
+  .btn {
+    width:100%; padding:16px; border:none; border-radius:14px;
+    font-family:'Orbitron',monospace; font-size:13px; font-weight:700;
+    letter-spacing:2px; cursor:pointer; transition:all 0.3s;
+    position:relative; overflow:hidden; margin-top:8px;
+  }
+  .btn::before { content:''; position:absolute; top:50%; left:50%; width:0; height:0; background:rgba(255,255,255,0.2); border-radius:50%; transform:translate(-50%,-50%); transition:width 0.6s,height 0.6s; }
+  .btn:active::before { width:300px; height:300px; }
+  .btn-login  { background:linear-gradient(135deg,var(--green),#00c896); color:#000; box-shadow:0 4px 24px rgba(0,255,136,0.3); }
+  .btn-login:hover  { transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,255,136,0.5); }
+  .btn-broker { background:linear-gradient(135deg,var(--blue),#0080ff); color:white; box-shadow:0 4px 24px rgba(0,195,255,0.3); }
+  .btn-broker:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,195,255,0.5); }
+  .chart-card { background:var(--card); backdrop-filter:blur(20px); border:1px solid var(--border); padding:12px; display:flex; flex-direction:column; height:100%; }
+  .chart-link-row { display:flex; gap:8px; margin-bottom:12px; }
+  .chart-link-row input { flex:1; margin-top:0; }
+  .chart-link-row button { width:auto; margin-top:0; padding:12px 16px; white-space:nowrap; }
+  .btn-ghost { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.1); }
+  .btn-ghost:hover { background:rgba(255,255,255,0.1); }
+  .chart-placeholder { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:rgba(255,255,255,0.3); border:1px dashed rgba(255,255,255,0.1); border-radius:16px; text-align:center; padding:20px; }
+  #corretora { flex:1; width:100%; border:none; border-radius:16px; background:white; }
+  .btn-start  { background:linear-gradient(135deg,#00ff88,#00c896); color:#000; box-shadow:0 4px 24px rgba(0,255,136,0.3); }
+  .btn-start:hover  { transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,255,136,0.5); }
+  .btn-stop   { background:linear-gradient(135deg,var(--red),#cc0033); color:white; box-shadow:0 4px 24px rgba(255,59,92,0.3); }
+  .btn-stop:hover   { transform:translateY(-2px); box-shadow:0 8px 32px rgba(255,59,92,0.5); }
+  .btn-call   { background:linear-gradient(135deg,#00ff88,#00c896); color:#000; flex:1; }
+  .btn-put    { background:linear-gradient(135deg,var(--red),#cc0033); color:white; flex:1; }
+  .btn-sm     { padding:10px 16px; font-size:11px; margin-top:0; }
+  /* TOGGLE */
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .toggle-label { font-size:13px; color:rgba(255,255,255,0.7); }
+  .toggle { position:relative; width:44px; height:24px; cursor:pointer; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; }
+  .toggle-slider::before { content:''; position:absolute; left:3px; top:3px; width:18px; height:18px; background:white; border-radius:50%; transition:0.3s; }
+  .toggle input:checked + .toggle-slider { background:var(--green); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
+  /* CONTA TOGGLE */
+  .conta-toggle { display:flex; gap:8px; margin-bottom:12px; }
+  .conta-btn { flex:1; padding:10px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; background:rgba(0,0,0,0.3); color:rgba(255,255,255,0.4); font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; cursor:pointer; transition:all 0.3s; }
+  .conta-btn.active-demo { background:rgba(0,195,255,0.15); border-color:rgba(0,195,255,0.4); color:var(--blue); }
+  .conta-btn.active-real { background:rgba(0,255,136,0.15); border-color:rgba(0,255,136,0.4); color:var(--green); }
+  /* SIGNAL */
+  .signal-display { text-align:center; padding:24px 16px; position:relative; }
+  .signal-ring {
+    width:160px; height:160px; border-radius:50%;
+    border:2px solid rgba(255,255,255,0.1);
+    margin:0 auto 20px; display:flex; align-items:center;
+    justify-content:center; position:relative; transition:all 0.5s;
+  }
+  .signal-ring::before { content:''; position:absolute; inset:-8px; border-radius:50%; border:2px solid transparent; border-top-color:var(--green); animation:spin 2s linear infinite; }
+  .signal-ring::after  { content:''; position:absolute; inset:-16px; border-radius:50%; border:1px solid transparent; border-bottom-color:rgba(0,255,136,0.3); animation:spin 3s linear infinite reverse; }
+  @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .signal-ring.call-ring { border-color:rgba(0,255,136,0.3); box-shadow:inset 0 0 40px rgba(0,255,136,0.1),0 0 40px rgba(0,255,136,0.2); }
+  .signal-ring.call-ring::before { border-top-color:var(--green); }
+  .signal-ring.put-ring  { border-color:rgba(255,59,92,0.3);  box-shadow:inset 0 0 40px rgba(255,59,92,0.1),0 0 40px rgba(255,59,92,0.2); }
+  .signal-ring.put-ring::before  { border-top-color:var(--red); }
+  .signal-inner { text-align:center; }
+  .signal-text { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:3px; color:rgba(255,255,255,0.3); transition:all 0.5s; }
+  .signal-text.call { color:var(--green); text-shadow:0 0 20px var(--green); }
+  .signal-text.put  { color:var(--red);   text-shadow:0 0 20px var(--red); }
+  .signal-pair { font-size:12px; color:rgba(255,255,255,0.5); margin-top:4px; letter-spacing:1px; }
+  /* TIMER */
+  .timer-display { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:12px; }
+  .timer-box { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px 14px; font-family:'Orbitron',monospace; font-size:20px; font-weight:700; color:var(--blue); min-width:60px; text-align:center; }
+  .timer-sep { font-family:'Orbitron',monospace; font-size:20px; color:rgba(255,255,255,0.3); animation:blink 1s ease-in-out infinite; }
+  /* STATS ROW */
+  .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px; }
+  .stat-box { background:var(--card); backdrop-filter:blur(20px); border:1px solid var(--border); border-radius:16px; padding:14px 10px; text-align:center; position:relative; overflow:hidden; }
+  .stat-box::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--green),transparent); }
+  .stat-val { font-family:'Orbitron',monospace; font-size:18px; font-weight:900; color:var(--green); display:block; }
+  .stat-val.red  { color:var(--red); }
+  .stat-val.blue { color:var(--blue); }
+  .stat-lbl { font-size:10px; color:rgba(255,255,255,0.3); letter-spacing:1px; margin-top:4px; display:block; }
+  /* SCAN */
+  .scanning-bar { height:3px; background:linear-gradient(90deg,transparent,var(--green),transparent); border-radius:2px; margin:12px 0; animation:scan 1.5s ease-in-out infinite; display:none; }
+  .scanning-bar.active { display:block; }
+  @keyframes scan { 0%{transform:scaleX(0);opacity:0;} 50%{transform:scaleX(1);opacity:1;} 100%{transform:scaleX(0);opacity:0;} }
+  .scan-status { display:flex; align-items:center; gap:10px; font-size:13px; color:rgba(255,255,255,0.4); margin-top:8px; }
+  .scan-spinner { width:16px; height:16px; border:2px solid rgba(0,255,136,0.2); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; display:none; }
+  .scan-spinner.active { display:block; }
+  .progress-wrap { background:rgba(255,255,255,0.05); border-radius:4px; height:4px; overflow:hidden; margin-top:8px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--blue)); border-radius:4px; width:0%; transition:width 0.3s; }
+  /* HISTORY */
+  .hist-item { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(0,0,0,0.2); border-radius:10px; margin-bottom:6px; border-left:3px solid transparent; animation:slideIn 0.3s ease forwards; opacity:0; }
+  .hist-item.win  { border-left-color:var(--green); }
+  .hist-item.loss { border-left-color:var(--red); }
+  .hist-item.empate { border-left-color:var(--blue); }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-20px);} to{opacity:1;transform:translateX(0);} }
+  .hist-ativo { font-family:'Orbitron',monospace; font-size:11px; font-weight:700; color:white; }
+  .hist-dir { font-size:11px; padding:2px 8px; border-radius:20px; font-family:'Orbitron',monospace; }
+  .hist-dir.call { background:rgba(0,255,136,0.15); color:var(--green); border:1px solid rgba(0,255,136,0.3); }
+  .hist-dir.put  { background:rgba(255,59,92,0.15); color:var(--red); border:1px solid rgba(255,59,92,0.3); }
+  .hist-lucro { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; }
+  .hist-lucro.pos { color:var(--green); }
+  .hist-lucro.neg { color:var(--red); }
+  .hist-lucro.zero { color:var(--blue); }
+  .hist-ts { font-size:10px; color:rgba(255,255,255,0.3); }
+  /* SALDO ACUM */
+  .saldo-acum { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; text-align:center; margin:8px 0; }
+  .saldo-acum.pos { color:var(--green); text-shadow:0 0 20px rgba(0,255,136,0.5); }
+  .saldo-acum.neg { color:var(--red);   text-shadow:0 0 20px rgba(255,59,92,0.5); }
+  textarea#scriptLua { width:100%; min-height:260px; resize:vertical; padding:14px; background:#050a12; border:1px solid rgba(0,255,136,0.24); border-radius:12px; color:#d9ffe9; font:12px/1.55 monospace; outline:none; }
+  textarea#scriptLua:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(0,255,136,0.1); }
+  code { color:var(--green); font-family:monospace; }
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(6,11,20,0.95); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:12px 16px; display:flex; justify-content:space-around; z-index:100; overflow-x:auto; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; color:rgba(255,255,255,0.3); font-size:10px; letter-spacing:1px; cursor:pointer; transition:all 0.3s; padding:6px 12px; border-radius:12px; white-space:nowrap; }
+  .nav-item.active { color:var(--green); background:rgba(0,255,136,0.1); }
+  .nav-item svg { width:22px; height:22px; }
+  /* TOAST */
+  .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:rgba(0,255,136,0.15); border:1px solid rgba(0,255,136,0.4); backdrop-filter:blur(20px); color:var(--green); padding:12px 24px; border-radius:50px; font-family:'Orbitron',monospace; font-size:12px; letter-spacing:2px; opacity:0; transition:all 0.4s; z-index:1000; pointer-events:none; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  /* SECTIONS */
+  .section { display:none; }
+  .section.active { display:block; }
+  /* PAINEL GESTÃO */
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .confluencia-list { display:flex; flex-direction:column; gap:7px; }
+  .confluencia-estrategia-item { display:flex; align-items:center; min-height:32px; padding:8px 10px; border:1px solid rgba(0,255,136,0.18); border-radius:9px; background:rgba(0,255,136,0.06); color:rgba(255,255,255,0.86); font-family:'Orbitron',monospace; font-size:10px; letter-spacing:.5px; }
+  .confluencia-meta { margin-bottom:9px; color:rgba(255,255,255,0.42); font-size:10px; line-height:1.35; }
+  .candlestick-pattern-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .candlestick-pattern-grid .toggle-row { padding:9px 8px; border:1px solid rgba(255,255,255,0.08); border-radius:9px; background:rgba(0,0,0,0.22); }
+  .candlestick-pattern-grid .toggle-label { font-size:11px; line-height:1.2; padding-right:8px; }
+  @media (max-width:390px) { .candlestick-pattern-grid { grid-template-columns:1fr; } }
+  /* HORARIO */
+  .hora-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  /* BADGE */
+  .badge { font-size:9px; padding:2px 8px; border-radius:20px; font-family:'Orbitron',monospace; letter-spacing:1px; }
+  .badge-green { background:rgba(0,255,136,0.15); color:var(--green); border:1px solid rgba(0,255,136,0.3); }
+  .badge-blue  { background:rgba(0,195,255,0.15); color:var(--blue); border:1px solid rgba(0,195,255,0.3); }
+  .badge-red   { background:rgba(255,59,92,0.15);  color:var(--red);  border:1px solid rgba(255,59,92,0.3); }
+  .badge-yellow { background:rgba(245,158,11,0.15); color:var(--yellow); border:1px solid rgba(245,158,11,0.3); }
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.show { display:flex; }
+  .modal-box { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:24px; width:100%; max-width:340px; position:relative; }
+  .modal-title { font-family:'Orbitron',monospace; font-size:13px; letter-spacing:2px; color:var(--green); margin-bottom:20px; }
+  .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:20px; }
+  /* CONNECT STATUS */
+  .conn-info { display:flex; align-items:center; gap:12px; background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+  .conn-icon { font-size:22px; }
+  .conn-text { flex:1; }
+  .conn-name { font-family:'Orbitron',monospace; font-size:11px; color:var(--green); letter-spacing:1px; }
+  .conn-saldo { font-size:13px; color:rgba(255,255,255,0.6); margin-top:2px; }
+  /* WINRATE BAR */
+  .wr-bar-wrap { background:rgba(255,255,255,0.05); border-radius:4px; height:6px; overflow:hidden; margin-top:6px; }
+  .wr-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--green),var(--blue)); transition:width 0.6s; }
+  /* SENTIMENTO DOS TRADERS */
+  .sentimento-traders-line { display:flex; align-items:center; gap:10px; background:rgba(0,195,255,0.05); border:1px solid rgba(0,195,255,0.18); border-radius:12px; padding:10px 12px; margin-bottom:12px; }
+  .sentimento-traders-icon { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:9px; background:rgba(0,195,255,0.12); color:var(--blue); font-family:'Orbitron',monospace; font-weight:900; }
+  .sentimento-traders-main { flex:1; min-width:0; }
+  .sentimento-traders-title { display:flex; align-items:center; gap:6px; font-family:'Orbitron',monospace; font-size:9px; letter-spacing:1px; color:rgba(255,255,255,0.75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sentimento-traders-ativo { color:var(--blue); }
+  .sentimento-traders-values { display:flex; align-items:center; gap:7px; margin-top:6px; font-family:'Orbitron',monospace; font-size:10px; }
+  .sentimento-call { color:var(--green); min-width:62px; }
+  .sentimento-put { color:var(--red); min-width:62px; text-align:right; }
+  .sentimento-meter { flex:1; height:6px; display:flex; overflow:hidden; border-radius:5px; background:rgba(255,255,255,0.08); min-width:45px; }
+  .sentimento-meter-call { background:var(--green); transition:width .4s ease; }
+  .sentimento-meter-put { background:var(--red); transition:width .4s ease; }
+  .sentimento-traders-status { margin-top:5px; font-size:10px; color:rgba(255,255,255,0.45); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sentimento-traders-line.sentimento-call-active { border-color:rgba(0,255,136,0.35); }
+  .sentimento-traders-line.sentimento-put-active { border-color:rgba(255,59,92,0.35); }
+  /* MANUAL BUTTONS */
+  .manual-btns { display:flex; gap:10px; margin-top:10px; }
+  /* ATIVOS SELECT */
+  .ativo-refresh { display:flex; gap:8px; align-items:flex-end; }
+  .ativo-refresh select { flex:1; }
+  .btn-refresh { width:auto; padding:14px 16px; margin-top:0; background:rgba(0,195,255,0.15); border:1px solid rgba(0,195,255,0.3); color:var(--blue); border-radius:12px; font-size:18px; }
+  /* LOADING SPINNER */
+  .loader { display:inline-block; width:18px; height:18px; border:2px solid rgba(0,255,136,0.2); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; vertical-align:middle; margin-right:8px; }
+  /* ÚLTIMA OP */
+  .ultima-op-card { display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.3); border-radius:12px; padding:12px 14px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.06); }
+  /* EMPTY STATE */
+  .empty-state { text-align:center; color:rgba(255,255,255,0.2); padding:24px; font-size:12px; font-family:'Orbitron',monospace; letter-spacing:1px; }
+  /* INDICADORES */
+  .indicadores-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .ind-box { background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px; }
+  .ind-label { font-size:9px; color:rgba(255,255,255,0.3); letter-spacing:1px; font-family:'Orbitron',monospace; }
+  .ind-val { font-family:'Orbitron',monospace; font-size:14px; font-weight:700; color:white; margin-top:4px; }
+  .ind-val.g { color:var(--green); } .ind-val.r { color:var(--red); } .ind-val.b { color:var(--blue); }
+  /* NOTÍCIAS */
+  .noticia-item { background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px; margin-bottom:8px; }
+  .noticia-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .noticia-moeda { font-family:'Orbitron',monospace; font-size:10px; font-weight:700; color:var(--blue); }
+  .noticia-hora { font-family:'Orbitron',monospace; font-size:10px; color:rgba(255,255,255,0.4); }
+  .noticia-titulo { font-size:12px; color:rgba(255,255,255,0.8); margin-bottom:6px; }
+  .noticia-footer { display:flex; justify-content:space-between; align-items:center; }
+  .noticia-impacto { font-size:9px; padding:2px 8px; border-radius:12px; font-family:'Orbitron',monospace; }
+  .impacto-alto { background:rgba(255,59,92,0.2); color:var(--red); border:1px solid rgba(255,59,92,0.4); }
+  .impacto-medio { background:rgba(245,158,11,0.2); color:var(--yellow); border:1px solid rgba(245,158,11,0.4); }
+  .impacto-baixo { background:rgba(0,255,136,0.2); color:var(--green); border:1px solid rgba(0,255,136,0.4); }
+  .noticia-status { font-size:9px; padding:2px 8px; border-radius:12px; font-family:'Orbitron',monospace; }
+  .status-breve { background:rgba(0,195,255,0.2); color:var(--blue); }
+  .status-andamento { background:rgba(245,158,11,0.2); color:var(--yellow); animation:pulse 1s infinite; }
+  .status-finalizado { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.5); }
+  /* FILTROS */
+  .filtros-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .filtro-btn { padding:8px 14px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; background:rgba(0,0,0,0.3); color:rgba(255,255,255,0.6); font-size:11px; font-family:'Orbitron',monospace; cursor:pointer; transition:all 0.3s; }
+  .filtro-btn.active { background:rgba(0,255,136,0.2); border-color:rgba(0,255,136,0.4); color:var(--green); }
+  /* SOROS */
+  .soros-status { background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px; margin-bottom:12px; }
+  .soros-nivel { font-family:'Orbitron',monospace; font-size:14px; font-weight:700; color:var(--green); }
+  .soros-lucro { font-family:'Orbitron',monospace; font-size:16px; font-weight:900; color:var(--blue); margin-top:4px; }
+  .soros-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .soros-box { background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:8px; text-align:center; }
+  .soros-label { font-size:9px; color:rgba(255,255,255,0.4); letter-spacing:1px; font-family:'Orbitron',monospace; }
+  .soros-value { font-family:'Orbitron',monospace; font-size:12px; font-weight:700; color:white; margin-top:2px; }
+  /* TRADER TIMER ZONE */
+  .ttz-live-bar { display:flex; align-items:center; gap:8px; padding:10px 12px; margin-bottom:14px; background:rgba(0,195,255,0.07); border:1px solid rgba(0,195,255,0.18); border-radius:12px; font-size:11px; color:rgba(255,255,255,0.65); }
+  .ttz-live-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 10px var(--green); animation:blink 1s infinite; flex:none; }
+  .ttz-live-source { margin-left:auto; color:rgba(255,255,255,0.35); font-size:10px; text-align:right; }
+  .ttz-state-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ttz-zone-legend { display:grid; grid-template-columns:repeat(3, 1fr); gap:7px; margin-top:10px; }
+  .ttz-zone-legend-item { display:flex; align-items:center; gap:7px; min-width:0; padding:8px 9px; border:1px solid rgba(255,255,255,0.09); border-radius:9px; background:rgba(0,0,0,0.25); color:rgba(255,255,255,0.72); font-family:'Orbitron',monospace; font-size:8px; line-height:1.25; }
+  .ttz-zone-legend-item.active { border-color:rgba(255,255,255,0.4); color:white; box-shadow:0 0 12px rgba(0,195,255,0.1); }
+  .ttz-zone-legend-swatch { width:11px; height:11px; border-radius:50%; flex:none; box-shadow:0 0 8px currentColor; }
+  .ttz-zone-legend-empty { grid-column:1 / -1; color:rgba(255,255,255,0.38); font-size:10px; padding:6px 2px; }
+  .ttz-state-card { background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; min-height:126px; }
+  .ttz-state-card.current { border-color:rgba(0,255,136,0.35); box-shadow:inset 0 0 20px rgba(0,255,136,0.06); }
+  .ttz-state-card.next { border-color:rgba(0,195,255,0.3); box-shadow:inset 0 0 20px rgba(0,195,255,0.05); }
+  .ttz-state-label { font-family:'Orbitron',monospace; font-size:9px; letter-spacing:1.5px; color:rgba(255,255,255,0.35); }
+  .ttz-zone-name { font-family:'Orbitron',monospace; font-size:12px; font-weight:700; margin-top:10px; color:white; line-height:1.3; }
+  .ttz-zone-time { font-family:'Orbitron',monospace; font-size:18px; color:var(--blue); margin-top:7px; }
+  .ttz-zone-meta { font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px; line-height:1.3; }
+  .ttz-zone-line { display:flex; align-items:center; gap:8px; }
+  .ttz-zone-dot { width:12px; height:12px; border-radius:50%; border:2px solid rgba(255,255,255,0.45); flex:none; box-shadow:0 0 10px rgba(255,255,255,0.12); }
+  .ttz-decision { display:flex; align-items:center; gap:8px; margin-top:12px; padding:10px 12px; border-radius:10px; font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; }
+  .ttz-decision.allowed { color:var(--green); background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.25); }
+  .ttz-decision.blocked { color:var(--red); background:rgba(255,59,92,0.1); border:1px solid rgba(255,59,92,0.25); }
+  .ttz-decision.off { color:rgba(255,255,255,0.45); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); }
+  .ttz-countdown { font-family:'Orbitron',monospace; color:var(--blue); font-size:10px; margin-top:6px; }
+  .ttz-zone-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .ttz-color-card { display:grid; grid-template-columns:auto 1fr; gap:8px; width:100%; padding:10px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; background:rgba(0,0,0,0.25); color:white; transition:all .2s; }
+  .ttz-color-card.blocked { border-color:rgba(255,59,92,0.42); background:rgba(255,59,92,0.07); }
+  .ttz-color-card.unlocked { border-color:rgba(0,255,136,0.35); background:rgba(0,255,136,0.06); }
+  .ttz-color-body { min-width:0; }
+  .ttz-color-name { display:block; font-family:'Orbitron',monospace; font-size:9px; line-height:1.25; }
+  .ttz-color-card small { display:block; margin-top:4px; color:rgba(255,255,255,0.4); font-size:10px; line-height:1.2; }
+  .ttz-color-actions { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:3px; }
+  .ttz-zone-action { padding:6px 5px; border:1px solid rgba(255,255,255,0.16); border-radius:7px; color:rgba(255,255,255,0.6); background:rgba(0,0,0,0.25); font-family:'Orbitron',monospace; font-size:8px; cursor:pointer; transition:all .2s; }
+  .ttz-zone-action.block.selected { color:#ff3b5c; border-color:rgba(255,59,92,0.7); background:rgba(255,59,92,0.16); }
+  .ttz-zone-action.unlock.selected { color:#00ff88; border-color:rgba(0,255,136,0.7); background:rgba(0,255,136,0.14); }
+  .ttz-zone-action:not(.selected) { opacity:.55; }
+  .ttz-swatch { width:10px; height:10px; border-radius:50%; margin-top:2px; flex:none; }
+  .ttz-schedule-row { display:grid; grid-template-columns:1.1fr .75fr .75fr auto; gap:6px; align-items:end; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .ttz-schedule-row .input-group { margin-bottom:0; }
+  .ttz-schedule-row input, .ttz-schedule-row select { padding:10px 8px; font-size:12px; }
+  .ttz-remove { width:auto; min-width:34px; padding:10px 8px; margin:0; background:rgba(255,59,92,0.1); color:var(--red); border:1px solid rgba(255,59,92,0.25); border-radius:10px; cursor:pointer; }
+  .ttz-footer-note { color:rgba(255,255,255,0.35); font-size:10px; line-height:1.45; margin-top:10px; }
+  .ttz-error { color:var(--yellow); font-size:10px; line-height:1.4; margin-top:8px; }
+  .ttz-auto-session { display:flex; align-items:center; gap:8px; min-height:28px; padding:10px 12px; margin-top:8px; border:1px solid rgba(0,255,136,0.22); border-radius:10px; background:rgba(0,255,136,0.06); color:var(--green); font-family:'Orbitron',monospace; font-size:10px; letter-spacing:.8px; }
+  .ttz-session-status-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 9px var(--green); flex:none; animation:blink 1s infinite; }
+  .ttz-auto-session.warning { color:var(--yellow); border-color:rgba(245,158,11,0.28); background:rgba(245,158,11,0.06); }
+  .ttz-auto-session.warning .ttz-session-status-dot { background:var(--yellow); box-shadow:0 0 9px var(--yellow); }
+  @media (max-width:390px) { .ttz-state-grid, .ttz-zone-grid { grid-template-columns:1fr; } .ttz-zone-legend { grid-template-columns:1fr 1fr; } .ttz-live-source { display:none; } }
+</style>
+</head>
+<body>
+<div id="particles"></div>
+
+<!-- LOGIN -->
+<div class="section active" id="sectionLogin">
+  <div class="app">
+    <div style="text-align:center;padding:40px 20px;">
+      <div class="logo-icon" style="width:80px;height:80px;font-size:40px;margin:0 auto 20px;">🤖</div>
+      <div class="logo-text" style="font-size:28px;margin-bottom:8px;">Meu Script</div>
+      <div class="logo-sub">IQ OPTION TRADING BOT</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔐 LOGIN</div>
+      <div class="input-group">
+        <label class="input-label">EMAIL</label>
+        <input type="email" id="email" placeholder="seu@email.com">
+      </div>
+      <div class="input-group">
+        <label class="input-label">SENHA</label>
+        <input type="password" id="senha" placeholder="••••••••">
+      </div>
+      <div class="input-group">
+        <label class="input-label">BACKEND URL</label>
+        <input type="text" id="backendUrl" placeholder="http://localhost:5000" value="http://localhost:5000">
+      </div>
+      <div class="input-group">
+        <label class="input-label">TIPO DE CONTA</label>
+        <div class="conta-toggle">
+          <button class="conta-btn active-demo" id="btnDemo" onclick="setTipoConta('PRACTICE')">DEMO</button>
+          <button class="conta-btn" id="btnReal" onclick="setTipoConta('REAL')">REAL</button>
+        </div>
+      </div>
+      <button class="btn btn-login" id="btnLogin" onclick="login()">🚀 CONECTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header style="display:none;" id="header">
+  <div class="header-logo">
+    <div class="logo-icon">🤖</div>
+    <div>
+      <div class="logo-text">Meu Script</div>
+      <div class="logo-sub">IQ OPTION</div>
+    </div>
+  </div>
+  <div class="brasilia-clock" title="Horário oficial de Brasília">
+    <span class="brasilia-clock-label">BRASÍLIA</span>
+    <strong class="brasilia-clock-time" id="brasiliaClock">00:00:00</strong>
+  </div>
+  <div class="status-dot">
+    <div class="dot active" id="statusDot"></div>
+    <span id="statusText">Conectado</span>
+  </div>
+</header>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none;">
+
+<!-- ===== BOT ===== -->
+<div class="section active" id="sectionBot">
+
+  <!-- CONEXÃO INFO -->
+  <div class="conn-info" id="connInfo">
+    <div class="conn-icon">🏦</div>
+    <div class="conn-text">
+      <div class="conn-name" id="connNome">IQ OPTION — DEMO</div>
+      <div class="conn-saldo">Saldo: <strong id="connSaldo">R$ 0,00</strong></div>
+    </div>
+    <span class="badge badge-green" id="connBadge">DEMO</span>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <span class="stat-val" id="statWins">0</span>
+      <span class="stat-lbl">WINS</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-val red" id="statLosses">0</span>
+      <span class="stat-lbl">LOSSES</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-val blue" id="statWR">-%</span>
+      <span class="stat-lbl">WINRATE</span>
+    </div>
+  </div>
+
+  <!-- SALDO ACUMULADO -->
+  <div class="card" style="padding:16px 20px;">
+    <div class="card-title">💰 SALDO DA SESSÃO</div>
+    <div class="saldo-acum pos" id="saldoAcum">R$ 0,00</div>
+    <div class="indicadores-grid">
+      <div class="ind-box">
+        <div class="ind-label">LUCRO DA SESSÃO</div>
+        <div class="ind-val g" id="statLucroBruto">R$ 0,00</div>
+      </div>
+      <div class="ind-box">
+        <div class="ind-label">PREJUÍZO DA SESSÃO</div>
+        <div class="ind-val r" id="statPrejuizoBruto">R$ 0,00</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;">
+      <span>Operações: <strong id="statOps">0</strong>/<strong id="statLimiteDiario">200</strong></span>
+      <span>Empates: <strong id="statEmpates">0</strong></span>
+    </div>
+    <div class="wr-bar-wrap"><div class="wr-bar-fill" id="wrBarFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- SIGNAL DISPLAY -->
+  <div class="card">
+    <div class="card-title">📡 SINAL</div>
+    <div class="signal-display">
+      <div class="signal-ring" id="signalRing">
+        <div class="signal-inner">
+          <div class="signal-text" id="signalText">AGUARDANDO</div>
+          <div class="signal-pair" id="signalPair">—</div>
+        </div>
+      </div>
+      <div class="timer-display">
+        <div class="timer-box" id="timerMin">00</div>
+        <div class="timer-sep">:</div>
+        <div class="timer-box" id="timerSec">00</div>
+      </div>
+      <div class="scan-status">
+        <div class="scan-spinner" id="scanSpinner"></div>
+        <span id="scanStatusText">Bot aguardando início</span>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <!-- ÚLTIMA OPERAÇÃO -->
+    <div id="ultimaOpDiv" style="display:none;">
+      <div class="card-title" style="margin-top:8px;">⚡ ÚLTIMA OPERAÇÃO</div>
+      <div class="ultima-op-card" id="ultimaOpCard"></div>
+    </div>
+  </div>
+
+  <!-- CONTROLES -->
+  <div class="card">
+    <div class="card-title">🎮 CONTROLES</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <button class="btn btn-start btn-sm" onclick="startBot()">🚀 INICIAR</button>
+      <button class="btn btn-stop btn-sm" onclick="stopBot()">⛔ PARAR</button>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Modo Manual</span>
+      <label class="toggle"><input type="checkbox" id="toggleManual" onchange="toggleModo()"><span class="toggle-slider"></span></label>
+    </div>
+    <div id="manualDiv" style="display:none;margin-top:12px;">
+      <div class="grid2" style="margin-bottom:10px;">
+        <div class="input-group">
+          <label class="input-label">MODALIDADE MANUAL</label>
+          <select id="modalidadeManual">
+            <option value="ambas">AMBAS — escolher automaticamente</option>
+            <option value="turbo">TURBO</option>
+            <option value="binary">BINÁRIA</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">CATÁLOGO LOCAL</label>
+          <div id="ativosInfo" style="padding:10px 0;color:rgba(255,255,255,0.55);font-size:11px;">Aguardando catálogo Binary/Turbo...</div>
+        </div>
+      </div>
+      <div class="ativo-refresh">
+        <div style="flex:1">
+          <label class="input-label">ATIVO MANUAL — BINARY/TURBO</label>
+          <select id="ativoManual"></select>
+        </div>
+        <button class="btn btn-refresh" onclick="carregarAtivos()" title="Atualizar catálogo Binary/Turbo">🔄</button>
+      </div>
+      <div class="manual-btns">
+        <button class="btn btn-call btn-sm" onclick="operarManual('call')">📈 CALL</button>
+        <button class="btn btn-put btn-sm" onclick="operarManual('put')">📉 PUT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EM OPERAÇÃO AGORA -->
+  <div class="card" id="cardEmOp" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div class="card-title" style="margin-bottom:0;">⚡ EM ANÁLISE/OPERAÇÃO</div>
+      <span class="badge badge-blue" id="qtEmOp">0 pares</span>
+    </div>
+    <div id="emOperacaoDiv" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  </div>
+
+  <!-- LOG DO SCANNER -->
+  <div class="card">
+    <div class="card-title">🔍 LOG DO SCANNER</div>
+    <div class="scanning-bar active" id="scanBar"></div>
+    <div id="scanLogDiv" style="max-height:140px;overflow-y:auto;font-family:'Rajdhani',monospace;font-size:11px;">
+      <div class="empty-state">AGUARDANDO INÍCIO...</div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="card">
+    <div class="card-title">📋 HISTÓRICO DE OPERAÇÕES</div>
+    <div id="historico">
+      <div class="empty-state">AGUARDANDO OPERAÇÕES...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== NOTÍCIAS ===== -->
+<div class="section" id="sectionNoticias">
+  <div class="card">
+    <div class="card-title">📰 NOTÍCIAS ECONÔMICAS</div>
+    
+    <div class="filtros-row">
+      <button class="filtro-btn active" onclick="filtrarNoticias('todas', this)">Todas</button>
+      <button class="filtro-btn" onclick="filtrarNoticias('alto', this)">Alto Impacto</button>
+      <button class="filtro-btn" onclick="filtrarNoticias('medio', this)">Médio Impacto</button>
+      <button class="filtro-btn" onclick="filtrarNoticias('baixo', this)">Baixo Impacto</button>
+    </div>
+
+    <div class="grid2" style="margin-top:12px;margin-bottom:12px;">
+      <div class="input-group">
+        <label class="input-label">MINUTOS ANTES DA NOTÍCIA</label>
+        <input type="number" id="cfgTempoAntesNoticia" value="5" min="0" max="1440" step="1" oninput="marcarConfigNoticiaEditada()">
+      </div>
+      <div class="input-group">
+        <label class="input-label">MINUTOS DEPOIS DA NOTÍCIA</label>
+        <input type="number" id="cfgTempoDepoisNoticia" value="5" min="0" max="1440" step="1" oninput="marcarConfigNoticiaEditada()">
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:10px;">Janela usada pelo bloqueio de entradas para notícias de alto impacto.</div>
+    <div class="toggle-row">
+      <span class="toggle-label">Bloquear entradas por notícias</span>
+      <label class="toggle"><input type="checkbox" id="backendCfg_bloquear_por_noticias" checked onchange="marcarControleBackendEditado('bloquear_por_noticias')"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Ativar módulo de notícias</span>
+      <label class="toggle"><input type="checkbox" id="backendCfg_noticias_ativas" checked onchange="marcarControleBackendEditado('noticias_ativas')"><span class="toggle-slider"></span></label>
+    </div>
+    <button class="btn btn-start" type="button" onclick="salvarConfigNoticias()">💾 SALVAR CONFIGURAÇÕES DE NOTÍCIAS</button>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div class="ind-box">
+        <div class="ind-label">PRÓXIMAS</div>
+        <div class="ind-val b" id="countProximas">0</div>
+      </div>
+      <div class="ind-box">
+        <div class="ind-label">EM ANDAMENTO</div>
+        <div class="ind-val" style="color:#f59e0b;" id="countAndamento">0</div>
+      </div>
+      <div class="ind-box">
+        <div class="ind-label">FINALIZADAS</div>
+        <div class="ind-val" style="color:rgba(255,255,255,0.5);" id="countFinalizadas">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRÓXIMAS NOTÍCIAS -->
+  <div class="card">
+    <div class="card-title">⏰ PRÓXIMAS NOTÍCIAS</div>
+    <div id="proximasNoticiasDiv">
+      <div class="empty-state">Carregando notícias...</div>
+    </div>
+  </div>
+
+  <!-- NOTÍCIAS EM ANDAMENTO -->
+  <div class="card">
+    <div class="card-title">🔴 EM ANDAMENTO</div>
+    <div id="andamentoNoticiasDiv">
+      <div class="empty-state">Nenhuma notícia em andamento</div>
+    </div>
+  </div>
+
+  <!-- NOTÍCIAS FINALIZADAS -->
+  <div class="card">
+    <div class="card-title">✅ FINALIZADAS</div>
+    <div id="finalizadasNoticiasDiv">
+      <div class="empty-state">Nenhuma notícia finalizada</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GESTÃO ===== -->
+<div class="section" id="sectionGestao">
+  <div class="card">
+    <div class="card-title">💼 GESTÃO DE RISCO</div>
+
+    <div class="grid2">
+      <div class="input-group">
+        <label class="input-label">ENTRADA (R$)</label>
+        <input type="number" id="cfgEntrada" value="2" min="1" step="0.5" oninput="marcarEntradaEditada()">
+      </div>
+      <div class="input-group" id="grpExpiracao">
+        <label class="input-label">TIMEFRAME DE ANÁLISE (min)</label>
+        <select id="cfgExpiracao" onchange="marcarExpiracaoEditada()">
+          <option value="1">M1 — 1 min</option>
+          <option value="5">M5 — 5 min</option>
+          <option value="15">M15 — 15 min</option>
+        </select>
+        <div id="expiracaoAutoNote" style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;"></div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">MODALIDADE DE ENTRADA</label>
+        <select id="cfgModalidade" onchange="marcarModalidadeEditada()">
+          <option value="ambas">AMBAS — Turbo e Binária</option>
+          <option value="turbo">TURBO</option>
+          <option value="binary">BINÁRIA</option>
+        </select>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">M1, M5 e M15 usam o mesmo timeframe selecionado para Turbo e Binária; “Ambas” escolhe uma modalidade aberta.</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="input-group">
+        <label class="input-label">STOP WIN (R$)</label>
+        <input type="number" id="cfgStopWin" value="100" min="1" oninput="marcarStopWinEditado()">
+      </div>
+      <div class="input-group">
+        <label class="input-label">STOP LOSS (R$)</label>
+        <input type="number" id="cfgStopLoss" value="100" min="1" oninput="marcarStopLossEditado()">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="input-group">
+        <label class="input-label">PAUSAR APÓS X LOSSES SEGUIDOS</label>
+        <input type="number" id="cfgLossesSeguidosLimite" value="3" min="0" max="20" step="1" oninput="marcarLossesSeguidosEditado()">
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">0 desativa. Conta o ciclo completo (Gale incluso), não cada perna.</div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">TEMPO DE PAUSA (MIN)</label>
+        <input type="number" id="cfgLossesSeguidosPausaMin" value="30" min="0" max="720" step="1" oninput="marcarLossesSeguidosEditado()">
+      </div>
+    </div>
+    <div id="pausaLossesAviso" style="display:none;font-size:12px;color:#ffb84d;margin:-6px 0 12px;padding:8px 10px;background:rgba(255,184,77,0.08);border:1px solid rgba(255,184,77,0.25);border-radius:8px;">
+      🧊 Pausado por losses seguidos — novas entradas voltam em <span id="pausaLossesRestante">-</span>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">LIMITE DIÁRIO DE OPERAÇÕES</label>
+      <input type="number" id="cfgLimite" value="1000" min="1" max="1000" oninput="marcarLimiteEditado()">
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Martingale / Gale</span>
+      <label class="toggle"><input type="checkbox" id="cfgUsarGale" checked onchange="toggleGaleOpts(); marcarUsarGaleEditada();"><span class="toggle-slider"></span></label>
+    </div>
+
+    <div id="galeOpts">
+      <div class="grid2" style="margin-top:10px;">
+        <div class="input-group">
+          <label class="input-label">NÍVEIS DE GALE</label>
+          <input type="number" id="cfgNiveisGale" value="2" min="1" max="5" oninput="marcarGaleConfigEditada()">
+        </div>
+        <div class="input-group">
+          <label class="input-label">FATOR GALE</label>
+          <input type="number" id="cfgFatorGale" value="2.2" min="1.5" max="5" step="0.1" oninput="marcarGaleConfigEditada()">
+        </div>
+      </div>
+      <div class="input-group" style="margin-top:10px;">
+        <label class="input-label">ESPERA APÓS LOSS (segundos)</label>
+        <input type="number" id="cfgAtrasoMartingale" value="0" min="0" max="29" step="1" oninput="marcarAtrasoMartingaleEditado()">
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">Tempo aguardado depois do LOSS antes de iniciar o próximo Gale.</div>
+      </div>
+      <div class="input-group" style="margin-top:10px;">
+        <label class="input-label">INICIAR MARTINGALE</label>
+        <select id="cfgMartingaleModo" onchange="marcarMartingaleModoEditado()">
+          <option value="proxima_vela">Na próxima vela</option>
+          <option value="proximo_sinal">Somente no próximo sinal confirmado</option>
+        </select>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">No segundo modo, aguarda nova confluência válida antes de recuperar.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOROS -->
+  <div class="card">
+    <div class="card-title">🎯 ESTRATÉGIA SOROS</div>
+    
+    <div class="toggle-row">
+      <span class="toggle-label">Ativar Soros</span>
+      <label class="toggle"><input type="checkbox" id="cfgUsarSoros" onchange="toggleSorosOpts()"><span class="toggle-slider"></span></label>
+    </div>
+
+    <div id="sorosOpts" style="display:none;">
+      <div class="grid2" style="margin-top:10px;">
+        <div class="input-group">
+          <label class="input-label">NÍVEIS SOROS</label>
+          <input type="number" id="cfgNiveisSoros" value="3" min="1" max="10">
+        </div>
+        <div class="input-group">
+          <label class="input-label">REINVESTIMENTO (%)</label>
+          <input type="number" id="cfgReinvestimentoSoros" value="100" min="0" max="100" step="10">
+        </div>
+      </div>
+
+      <div class="soros-status" id="sorosStatusDiv" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:1px;font-family:'Orbitron',monospace;margin-bottom:4px;">NÍVEL ATUAL</div>
+            <div class="soros-nivel" id="sorosNivelAtual">0</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:1px;font-family:'Orbitron',monospace;margin-bottom:4px;">LUCRO SEQUÊNCIA</div>
+            <div class="soros-lucro" id="sorosLucroSeq">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="soros-grid">
+          <div class="soros-box">
+            <div class="soros-label">ACUMULADO</div>
+            <div class="soros-value" id="sorosAcumulado">R$ 0,00</div>
+          </div>
+          <div class="soros-box">
+            <div class="soros-label">TOTAL SEQUÊNCIAS</div>
+            <div class="soros-value" id="sorosTotalSeq">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="luaScriptCard">
+    <div class="card-title">SCRIPT MANUAL · LUA QUADCODE</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.55);line-height:1.5;margin-bottom:10px;">
+      Todas as estratégias internas foram removidas do fluxo. O robô só pode iniciar depois que este script for autorizado e salvo.
+      Use <code>instrument { ... }</code> e <code>plot_shape(...)</code>. Para um sinal explícito, use o comentário
+      <code>-- MEUROBO_SIGNAL: CALL</code> ou <code>-- MEUROBO_SIGNAL: PUT</code>.
+    </div>
+    <textarea id="scriptLua" spellcheck="false" placeholder="instrument { name = 'Meu Script', overlay = true }
+
+-- MEUROBO_SIGNAL: CALL
+plot_shape(close > open, 'CALL', shape_style.triangleup, shape_size.large, '#00ff88', shape_location.belowbar, 0, 'CALL')"></textarea>
+    <div id="scriptLuaStatus" style="font-size:11px;margin-top:8px;color:rgba(255,255,255,0.5);">Nenhum script autorizado.</div>
+    <button class="btn btn-start" type="button" onclick="salvarScriptLua()">AUTORIZAR E SALVAR SCRIPT</button>
+  </div>
+  <div class="card">
+    <div class="card-title">⏰ HORÁRIOS PERMITIDOS</div>
+    <div class="hora-row">
+      <div class="input-group">
+        <label class="input-label">INÍCIO</label>
+        <input type="time" id="cfgHoraIni" value="00:00" oninput="marcarHorarioEditado()">
+      </div>
+      <div class="input-group">
+        <label class="input-label">FIM</label>
+        <input type="time" id="cfgHoraFim" value="23:59" oninput="marcarHorarioEditado()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">CONTA</div>
+    <div class="input-group">
+      <label class="input-label">TIPO DE CONTA</label>
+      <select id="cfgConta" onchange="trocarConta()">
+        <option value="PRACTICE">Demo / Prática</option>
+        <option value="REAL">Real</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-start" onclick="salvarConfig()">💾 SALVAR CONFIGURAÇÕES</button>
+</div>
+
+<!-- ===== TRADER TIMER ZONE ===== -->
+<div class="section" id="sectionTtz">
+  <div class="card">
+    <div class="card-title">SESSÃO TRADER TIMER ZONE</div>
+    <div class="ttz-auto-session" id="ttzSessionStatus">
+      <span class="ttz-session-status-dot"></span>
+      <span id="ttzSessionLabel">SESSÃO AUTOMÁTICA ATIVA</span>
+      <span class="ttz-live-source" id="ttzSessionSource">MONITORAMENTO TTZ</span>
+    </div>
+    <div class="ttz-footer-note">Faça login com sua conta do tradertimerzone.com uma vez; o backend guarda a sessão em memória e atualiza o mapa de zonas sozinho a partir daí (a senha nunca é salva em disco). Sem login, use a agenda manual abaixo como alternativa.</div>
+    <div class="grid2" style="margin-top:10px;">
+      <div class="input-group">
+        <label class="input-label">E-MAIL TTZ</label>
+        <input type="email" id="ttzLoginEmail" placeholder="seu@email.com" autocomplete="username">
+      </div>
+      <div class="input-group">
+        <label class="input-label">SENHA TTZ</label>
+        <input type="password" id="ttzLoginSenha" placeholder="••••••••" autocomplete="current-password">
+      </div>
+    </div>
+    <div class="toolbar-row" style="display:flex; gap:8px; margin-top:8px;">
+      <button class="btn btn-start" style="flex:1;" onclick="conectarTtzSessao()">🔗 CONECTAR SESSÃO TTZ</button>
+      <button class="btn btn-stop" style="flex:1;" onclick="desconectarTtzSessao()">DESCONECTAR</button>
+    </div>
+    <div class="ttz-error" id="ttzLoginMsg"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">TRADER TIMER ZONE</div>
+    <div class="ttz-live-bar">
+      <span class="ttz-live-dot" id="ttzLiveDot"></span>
+      <span id="ttzLiveStatus">Aguardando dados TTZ...</span>
+      <span class="ttz-live-source" id="ttzLiveSource">ATUALIZAÇÃO AO VIVO</span>
+    </div>
+    <div class="ttz-state-grid">
+      <div class="ttz-state-card current">
+        <div class="ttz-state-label">ZONA ATUAL (TTZ)</div>
+        <div class="ttz-zone-line" style="margin-top:10px;"><span class="ttz-zone-dot" id="ttzCurrentDot"></span><div class="ttz-zone-name" id="ttzCurrentName">—</div></div>
+        <div class="ttz-zone-time" id="ttzCurrentTime">--:--</div>
+        <div class="ttz-zone-meta" id="ttzCurrentMeta">Nenhuma zona ativa</div>
+      </div>
+      <div class="ttz-state-card next">
+        <div class="ttz-state-label">PRÓXIMA ZONA (TTZ)</div>
+        <div class="ttz-zone-line" style="margin-top:10px;"><span class="ttz-zone-dot" id="ttzNextDot"></span><div class="ttz-zone-name" id="ttzNextName">—</div></div>
+        <div class="ttz-zone-time" id="ttzNextTime">--:--</div>
+        <div class="ttz-countdown" id="ttzNextCountdown">CONTAGEM: --:--</div>
+      </div>
+    </div>
+    <div class="ttz-zone-legend" id="ttzZoneLegend" aria-label="Zonas TTZ"></div>
+    <div class="ttz-decision off" id="ttzDecision">TTZ FILTRO DESATIVADO</div>
+    <div class="ttz-error" id="ttzError"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">CONFIGURAÇÃO TTZ</div>
+    <div class="toggle-row">
+      <span class="toggle-label">Ativar filtro Trader Timer Zone</span>
+      <label class="toggle"><input type="checkbox" id="cfgTtzAtivo"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="grid2" style="margin-top:10px;">
+      <div class="input-group">
+        <label class="input-label">MODO GLOBAL (compatibilidade)</label>
+        <select id="cfgTtzAction">
+          <option value="PAUSE">PAUSE — bloquear zonas escolhidas</option>
+          <option value="ALLOW">ALLOW — operar apenas nas escolhidas</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">REFRESH (segundos)</label>
+        <input type="number" id="cfgTtzRefresh" value="60" min="15" max="900" step="1">
+      </div>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Filtrar apenas quando a zona contém a moeda do ativo</span>
+      <label class="toggle"><input type="checkbox" id="cfgTtzCurrency"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="input-label" style="margin-top:16px;">CONTROLE INDIVIDUAL DAS CORES</div>
+    <div class="ttz-zone-grid" id="ttzZoneOptions"></div>
+    <div class="ttz-footer-note">Cada cor marcada como BLOQUEADA impede entradas quando for a zona atual. DESBLOQUEAR libera aquela cor. A regra vale para o scanner automático e para as entradas manuais.</div>
+    <div class="input-label" style="margin-top:16px;">AGENDA MANUAL (fallback sem login TTZ)</div>
+    <div id="ttzScheduleRows"></div>
+    <button class="btn btn-start btn-sm" style="margin-top:8px;" onclick="adicionarTtzIntervalo()">➕ ADICIONAR INTERVALO</button>
+    <div class="ttz-footer-note">Só é usada quando não há sessão TTZ conectada nem mapa oficial recebido. Defina zona, início e fim; salve com o botão abaixo.</div>
+  </div>
+
+
+  <button class="btn btn-start" onclick="salvarConfigTtz()">💾 SALVAR CONFIGURAÇÃO TTZ</button>
+</div>
+
+<!-- ===== CHART ===== -->
+<div class="section" id="sectionChart" style="display:flex;flex-direction:column;height:calc(100vh - 140px);padding:0;margin:0">
+  <div class="chart-card" style="height:100%;margin-bottom:0;border-radius:0;flex:1;">
+    <div class="chart-link-row">
+      <input type="text" id="corretoraLink" placeholder="https://iqoption.com/traderoom" value="https://iqoption.com/traderoom">
+      <button class="btn btn-broker" onclick="carregarCorretora()">🌐 ABRIR</button>
+      <button class="btn btn-ghost" onclick="abrirCorretoraNovaAba()">↗</button>
+    </div>
+    <div class="chart-placeholder" id="chartPlaceholder" style="flex:1">
+      <svg viewBox="0 0 80 60" width="80" fill="none"><polyline points="5,50 15,35 25,42 35,20 45,30 55,15 65,25 75,10" stroke="#00ff88" stroke-width="2" fill="none"/><polyline points="5,55 15,45 25,50 35,38 45,44 55,30 65,38 75,25" stroke="#00c3ff" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/></svg>
+      <span style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px">IQ OPTION CHART</span>
+      <span style="font-size:12px;color:rgba(255,255,255,0.2)">Informe o link acima e toque em ABRIR</span>
+    </div>
+    <iframe id="corretora" style="display:none;"></iframe>
+  </div>
+</div>
+
+</div><!-- end .app -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" style="display:none;" id="bottomNav">
+  <div class="nav-item active" id="nav-bot" onclick="showSection('Bot')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+    BOT
+  </div>
+  <div class="nav-item" id="nav-noticias" onclick="showSection('Noticias')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H4z"/><path d="M4 4v-2h16v2"/><path d="M6 16h12"/></svg>
+    NOTÍCIAS
+  </div>
+  <div class="nav-item" id="nav-gestao" onclick="showSection('Gestao')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    GESTÃO
+  </div>
+  <div class="nav-item" id="nav-ttz" onclick="showSection('Ttz')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l5 3"/><path d="M4 12H2M22 12h-2"/></svg>
+    TTZ
+  </div>
+  <div class="nav-item" id="nav-chart" onclick="showSection('Chart')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    GRÁFICO
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API = {
+  base: 'http://localhost:5000',
+  setBase(url) {
+    const valor = String(url || '').trim().replace(/\/$/, '');
+    this.base = valor || 'http://localhost:5000';
+  },
+  async _json(response) {
+    const texto = await response.text();
+    let dados = {};
+    try { dados = texto ? JSON.parse(texto) : {}; } catch (_) { dados = { msg: texto || 'Resposta inválida do backend' }; }
+    if (!response.ok) return { ...dados, ok: false, status_code: response.status };
+    return dados;
+  },
+  async get(path) {
+    const r = await fetch(this.base + path, { headers: { 'Accept': 'application/json' } });
+    return this._json(r);
+  },
+  async post(path, data={}) {
+    const r = await fetch(this.base + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return this._json(r);
+  }
+};
+
+// ============================================================
+// PARTICLES
+// ============================================================
+(function() {
+  const c = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (5 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    p.style.width = p.style.height = (1 + Math.random() * 3) + 'px';
+    if (Math.random() > 0.5) p.style.background = '#00c3ff';
+    if (Math.random() > 0.8) p.style.background = '#a855f7';
+    c.appendChild(p);
+  }
+})();
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color === 'red' ? 'rgba(255,59,92,0.15)' : 'rgba(0,255,136,0.15)';
+  t.style.borderColor = color === 'red' ? 'rgba(255,59,92,0.4)' : 'rgba(0,255,136,0.4)';
+  t.style.color = color === 'red' ? '#ff3b5c' : '#00ff88';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// SECTIONS
+// ============================================================
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById('section' + name);
+  if (sec) sec.classList.add('active');
+  const nav = document.getElementById('nav-' + name.toLowerCase());
+  if (nav) nav.classList.add('active');
+}
+
+// ============================================================
+// TIPO CONTA (login)
+// ============================================================
+let tipoConta = 'PRACTICE';
+function setTipoConta(tipo) {
+  tipoConta = tipo;
+  document.getElementById('btnDemo').className = 'conta-btn' + (tipo === 'PRACTICE' ? ' active-demo' : '');
+  document.getElementById('btnReal').className = 'conta-btn' + (tipo === 'REAL' ? ' active-real' : '');
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+async function login() {
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+  const backendUrl = document.getElementById('backendUrl').value.trim();
+
+  if (!email || !senha) { showToast('PREENCHA EMAIL E SENHA', 'red'); return; }
+
+  API.setBase(backendUrl);
+
+  const btn = document.getElementById('btnLogin');
+  btn.innerHTML = '<span class="loader"></span>CONECTANDO...';
+  btn.disabled = true;
+
+  try {
+    const r = await API.post('/api/login', { email, senha, tipo: tipoConta });
+    if (r.ok) {
+      showToast('⏳ INICIANDO CONEXÃO...', 'green');
+      
+      // Polling para verificar status do login
+      const checkLogin = setInterval(async () => {
+        try {
+          const status = await API.get('/api/login_status');
+          if (status.conectado) {
+            clearInterval(checkLogin);
+            showToast('✅ CONECTADO!', 'green');
+            
+            document.getElementById('sectionLogin').classList.remove('active');
+            document.getElementById('header').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('bottomNav').style.display = 'flex';
+            showSection('Bot');
+            atualizarConnInfo(status.saldo, status.tipo);
+            carregarAtivos();
+            iniciarPolling();
+            atualizarNoticias();
+          } else if (status.status === 'error') {
+            clearInterval(checkLogin);
+            showToast('❌ ' + (status.msg || 'Erro no login'), 'red');
+            btn.innerHTML = '🚀 CONECTAR';
+            btn.disabled = false;
+          }
+        } catch(e) {
+          console.error("Erro ao verificar status:", e);
+        }
+      }, 2000);
+
+    } else {
+      showToast('❌ ' + (r.erro || 'Erro ao conectar'), 'red');
+      btn.innerHTML = '🚀 CONECTAR';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    showToast('❌ Erro de conexão', 'red');
+    btn.innerHTML = '🚀 CONECTAR';
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+// CONEXÃO INFO
+// ============================================================
+function atualizarConnInfo(saldo, tipo) {
+  const tipoLabel = tipo === 'PRACTICE' ? 'DEMO' : 'REAL';
+  document.getElementById('connNome').textContent = 'IQ OPTION — ' + tipoLabel;
+  document.getElementById('connSaldo').textContent = 'R$ ' + saldo.toFixed(2);
+  document.getElementById('connBadge').textContent = tipoLabel;
+  document.getElementById('connBadge').className = 'badge ' + (tipo === 'PRACTICE' ? 'badge-blue' : 'badge-green');
+}
+
+// ============================================================
+// ATIVOS
+// ============================================================
+let ativos = [];
+async function carregarAtivos() {
+  try {
+    const r = await API.get('/api/ativos');
+    const info = document.getElementById('ativosInfo');
+    if (r.ok && Array.isArray(r.catalogo)) {
+      const catalogo = r.catalogo;
+      ativos = catalogo.map(item => item.ativo);
+      const sel = document.getElementById('ativoManual');
+      sel.innerHTML = catalogo.map(item => {
+        const modalidades = (item.modalidades || []).map(m => m === 'binary' ? 'BINÁRIA' : 'TURBO').join(' + ');
+        const abertas = Object.entries(item.abertas || {}).filter(([, aberto]) => aberto).map(([m]) => m === 'binary' ? 'BINÁRIA' : 'TURBO').join(' + ');
+        const estado = abertas ? ` · ABERTA: ${abertas}` : ' · FECHADA';
+        return `<option value="${item.ativo}">${item.ativo} · ${modalidades}${estado}</option>`;
+      }).join('');
+      if (info) info.textContent = `${catalogo.length} ativos · Binary/Turbo · ${catalogo.filter(item => item.aberto).length} com alguma modalidade aberta`;
+    } else if (r.ok && Array.isArray(r.ativos)) {
+      ativos = r.ativos;
+      document.getElementById('ativoManual').innerHTML = ativos.map(a => `<option value="${a}">${a}</option>`).join('');
+      if (info) info.textContent = `${ativos.length} ativos Binary/Turbo`;
+    } else if (info) {
+      info.textContent = r.msg || 'Catálogo indisponível';
+    }
+  } catch(e) {
+    const info = document.getElementById('ativosInfo');
+    if (info) info.textContent = 'Não foi possível carregar o catálogo local';
+  }
+}
+
+// ============================================================
+// BOT CONTROLES
+// ============================================================
+async function startBot() {
+  try {
+    // Garante que os valores atualmente exibidos, inclusive os stops,
+    // sejam enviados antes de iniciar uma nova sessão.
+    const configOk = await salvarConfig(true);
+    if (!configOk) return;
+    const r = await API.post('/api/start', {});
+    if (r.ok) {
+      showToast('✅ BOT INICIADO', 'green');
+    } else {
+      showToast('❌ ' + (r.erro || r.msg || 'Erro ao iniciar'), 'red');
+    }
+  } catch(e) {
+    showToast('❌ Erro de conexão', 'red');
+  }
+}
+
+async function stopBot() {
+  try {
+    const r = await API.post('/api/stop', {});
+    if (r.ok) {
+      showToast('✅ BOT PARADO', 'green');
+    } else {
+      showToast('❌ ' + (r.erro || r.msg || 'Erro ao parar'), 'red');
+    }
+  } catch(e) {
+    showToast('❌ Erro de conexão com o backend', 'red');
+  }
+}
+
+// ============================================================
+// MODO MANUAL
+// ============================================================
+function toggleModo() {
+  const manual = document.getElementById('toggleManual').checked;
+  document.getElementById('manualDiv').style.display = manual ? 'block' : 'none';
+  // O timeframe configurado é manual e permanece ativo no scanner e nas entradas manuais.
+}
+
+async function operarManual(direcao) {
+  const ativo = document.getElementById('ativoManual').value;
+  const modalidade = document.getElementById('modalidadeManual')?.value || 'ambas';
+  if (!ativo) { showToast('Selecione um ativo', 'red'); return; }
+  
+  try {
+    const r = await API.post('/api/operar_manual', { ativo, direcao, modalidade });
+    if (r.ok) {
+      showToast('✅ OPERAÇÃO ENVIADA', 'green');
+    } else {
+      showToast('❌ ' + (r.erro || r.msg || 'Erro ao operar'), 'red');
+    }
+  } catch(e) {
+    showToast('❌ Erro de conexão', 'red');
+  }
+}
+
+// ============================================================
+// CONFIGURAÇÕES
+// ============================================================
+function toggleGaleOpts() {
+  const usar = document.getElementById('cfgUsarGale').checked;
+  document.getElementById('galeOpts').style.display = usar ? 'block' : 'none';
+}
+
+let sorosSalvamentoTimer = null;
+let sorosConfigEditada = false;
+
+function agendarSalvamentoSoros() {
+  sorosConfigEditada = true;
+  if (sorosSalvamentoTimer) clearTimeout(sorosSalvamentoTimer);
+  sorosSalvamentoTimer = setTimeout(async () => {
+    sorosSalvamentoTimer = null;
+    const ok = await salvarConfig(true);
+    if (ok) {
+      sorosConfigEditada = false;
+      const ativo = document.getElementById('cfgUsarSoros')?.checked;
+      showToast(ativo ? '✅ SOROS ATIVADO' : '✅ SOROS DESATIVADO', 'green');
+    }
+  }, 250);
+}
+
+function toggleSorosOpts(persistir = true) {
+  const controle = document.getElementById('cfgUsarSoros');
+  const usar = Boolean(controle && controle.checked);
+  const opcoes = document.getElementById('sorosOpts');
+  if (opcoes) opcoes.style.display = usar ? 'block' : 'none';
+  // O clique não fica apenas no frontend: persiste imediatamente o estado
+  // e os parâmetros atuais no backend, sem exigir um segundo botão.
+  if (controle && persistir) agendarSalvamentoSoros();
+}
+
+// ============================================================
+// TRADER TIMER ZONE — configuração e estado em tempo real
+// ============================================================
+const TTZ_DEFAULT_ZONES = [
+  {name:'Blue Zone', code:'B', hex:'#01B0F1', description:'Maior estabilidade com fluxo forte'},
+  {name:'Dark Green Zone', code:'D', hex:'#00B050', description:'Liquidez equilibrada e leitura técnica mais confiável'},
+  {name:'Light Green Zone', code:'L', hex:'#A8CF45', description:'Mercado mais leve e brando'},
+  {name:'Orange Zone', code:'O', hex:'#F59E0B', description:'Liquidez irregular e maior risco de falso rompimento'},
+  {name:'Events Zone', code:'R', hex:'#ED3237', description:'Evento econômico ativo ou muito próximo'},
+  {name:'Wine Zone', code:'W', hex:'#842D2F', description:'Impacto máximo e perigo extremo'}
+];
+let ttzStatus = null;
+let ttzConfigEditada = false;
+
+function marcarTtzEditado() { ttzConfigEditada = true; }
+function ttzZoneList(config) {
+  return Array.isArray(config?.zonas) && config.zonas.length ? config.zonas : TTZ_DEFAULT_ZONES;
+}
+function ttzBlockedZonesFromInputs() {
+  return [...document.querySelectorAll('[data-ttz-zone].blocked')].map(card => card.dataset.ttzZone);
+}
+function renderTtzZoneLegend(zones, currentName, nextName) {
+  const root = document.getElementById('ttzZoneLegend');
+  if (!root) return;
+  const list = Array.isArray(zones) && zones.length ? zones : TTZ_DEFAULT_ZONES;
+  const current = currentName || '';
+  const next = nextName || '';
+  root.innerHTML = list.map(zone => {
+    const active = zone.name === current || zone.name === next;
+    const marker = zone.name === current ? ' · ATUAL' : (zone.name === next ? ' · PRÓXIMA' : '');
+    const safeName = String(zone.name || '').replace(/[<>]/g, '');
+    const safeHex = /^#[0-9a-f]{6}$/i.test(String(zone.hex || '')) ? zone.hex : '#7b8794';
+    return `<div class="ttz-zone-legend-item${active ? ' active' : ''}" title="${safeName}"><span class="ttz-zone-legend-swatch" style="background:${safeHex};color:${safeHex}"></span><span>${safeName}${marker}</span></div>`;
+  }).join('');
+}
+function renderTtzZoneOptions(zones, blockedZones) {
+  const root = document.getElementById('ttzZoneOptions');
+  if (!root) return;
+  const blocked = new Set(Array.isArray(blockedZones) ? blockedZones : []);
+  root.innerHTML = '';
+  (zones || TTZ_DEFAULT_ZONES).forEach(zone => {
+    const isBlocked = blocked.has(zone.name);
+    const card = document.createElement('div');
+    card.className = 'ttz-color-card' + (isBlocked ? ' blocked' : ' unlocked');
+    card.dataset.ttzZone = zone.name;
+    const swatch = document.createElement('span'); swatch.className = 'ttz-swatch'; swatch.style.background = zone.hex;
+    const body = document.createElement('span'); body.className = 'ttz-color-body';
+    const strong = document.createElement('strong'); strong.className = 'ttz-color-name';
+    const small = document.createElement('small'); small.textContent = zone.description || '';
+    body.appendChild(strong); body.appendChild(small);
+    const actions = document.createElement('span'); actions.className = 'ttz-color-actions';
+    const block = document.createElement('button'); block.type = 'button'; block.className = 'ttz-zone-action block'; block.textContent = 'BLOQUEAR'; block.title = 'Bloquear entradas nesta cor';
+    const unlock = document.createElement('button'); unlock.type = 'button'; unlock.className = 'ttz-zone-action unlock'; unlock.textContent = 'DESBLOQUEAR'; unlock.title = 'Permitir entradas nesta cor';
+    const update = blockedNow => {
+      card.classList.toggle('blocked', blockedNow); card.classList.toggle('unlocked', !blockedNow);
+      strong.textContent = zone.name + (blockedNow ? ' · BLOQUEADA' : ' · DESBLOQUEADA');
+      block.classList.toggle('selected', blockedNow); unlock.classList.toggle('selected', !blockedNow);
+      card.setAttribute('aria-label', zone.name + (blockedNow ? ' bloqueada' : ' desbloqueada'));
+    };
+    block.addEventListener('click', () => { update(true); marcarTtzEditado(); });
+    unlock.addEventListener('click', () => { update(false); marcarTtzEditado(); });
+    actions.appendChild(block); actions.appendChild(unlock);
+    card.appendChild(swatch); card.appendChild(body); card.appendChild(actions); root.appendChild(card);
+    update(isBlocked);
+  });
+}
+function renderTtzScheduleRows(schedule) {
+  const root = document.getElementById('ttzScheduleRows');
+  if (!root) return;
+  root.innerHTML = '';
+  const rows = Array.isArray(schedule) ? schedule : [];
+  if (!rows.length) {
+    const empty = document.createElement('div'); empty.className = 'empty-state'; empty.textContent = 'Nenhum intervalo manual cadastrado. Clique em ➕ ADICIONAR INTERVALO.'; root.appendChild(empty); return;
+  }
+  rows.forEach(item => {
+    const row = document.createElement('div'); row.className = 'ttz-schedule-row';
+    const group = document.createElement('div'); group.className = 'input-group';
+    const label = document.createElement('label'); label.className = 'input-label'; label.textContent = 'ZONA';
+    const select = document.createElement('select'); select.dataset.ttzField = 'zone';
+    TTZ_DEFAULT_ZONES.forEach(zone => { const opt = document.createElement('option'); opt.value = zone.name; opt.textContent = zone.name.replace('Zona ', ''); opt.selected = zone.name === item.zone; select.appendChild(opt); });
+    select.addEventListener('change', marcarTtzEditado); group.appendChild(label); group.appendChild(select); row.appendChild(group);
+    [['INÍCIO','start'],['FIM','end']].forEach(([title,key]) => {
+      const timeGroup = document.createElement('div'); timeGroup.className = 'input-group';
+      const timeLabel = document.createElement('label'); timeLabel.className = 'input-label'; timeLabel.textContent = title;
+      const input = document.createElement('input'); input.type = 'time'; input.dataset.ttzField = key; input.value = item[key] || (key === 'start' ? '00:00' : '23:59'); input.addEventListener('input', marcarTtzEditado);
+      timeGroup.appendChild(timeLabel); timeGroup.appendChild(input); row.appendChild(timeGroup);
+    });
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'ttz-remove'; remove.textContent = '×'; remove.title = 'Remover intervalo'; remove.onclick = () => { row.remove(); marcarTtzEditado(); };
+    row.appendChild(remove); root.appendChild(row);
+  });
+}
+function coletarTtzSchedule() {
+  return [...document.querySelectorAll('#ttzScheduleRows .ttz-schedule-row')].map(row => ({
+    zone: row.querySelector('[data-ttz-field="zone"]')?.value || 'Zona Amarela',
+    start: row.querySelector('[data-ttz-field="start"]')?.value || '00:00',
+    end: row.querySelector('[data-ttz-field="end"]')?.value || '23:59',
+    days: [0,1,2,3,4,5,6], currencies: []
+  })).filter(item => item.start !== item.end);
+}
+function adicionarTtzIntervalo() {
+  const current = coletarTtzSchedule();
+  current.push({zone:'Zona Amarela', start:'08:00', end:'09:00', days:[0,1,2,3,4,5,6], currencies:[]});
+  renderTtzScheduleRows(current); marcarTtzEditado();
+}
+function coletarConfigTtz() {
+  return {
+    ttz_ativo: Boolean(document.getElementById('cfgTtzAtivo')?.checked),
+    ttz_time_action: document.getElementById('cfgTtzAction')?.value || 'PAUSE',
+    ttz_filter_by_currency: Boolean(document.getElementById('cfgTtzCurrency')?.checked),
+    ttz_refresh_seconds: Math.max(15, Math.min(900, parseInt(document.getElementById('cfgTtzRefresh')?.value, 10) || 60)),
+    ttz_selected_zones: ttzBlockedZonesFromInputs(),
+    ttz_blocked_zones: ttzBlockedZonesFromInputs(),
+    ttz_schedule: coletarTtzSchedule()
+  };
+}
+function aplicarConfigTtz(config) {
+  if (!config || ttzConfigEditada) return;
+  const ativo = document.getElementById('cfgTtzAtivo');
+  const action = document.getElementById('cfgTtzAction');
+  const currency = document.getElementById('cfgTtzCurrency');
+  const refresh = document.getElementById('cfgTtzRefresh');
+  if (ativo && document.activeElement !== ativo && config.ttz_ativo !== undefined) ativo.checked = Boolean(config.ttz_ativo);
+  if (action && document.activeElement !== action && config.ttz_time_action) action.value = config.ttz_time_action;
+  if (currency && document.activeElement !== currency && config.ttz_filter_by_currency !== undefined) currency.checked = Boolean(config.ttz_filter_by_currency);
+  if (refresh && document.activeElement !== refresh && config.ttz_refresh_seconds !== undefined) refresh.value = config.ttz_refresh_seconds;
+  renderTtzZoneOptions(ttzZoneList(config), config.ttz_blocked_zones || config.ttz_selected_zones || ['Events Zone','Wine Zone']);
+  renderTtzScheduleRows(config.ttz_schedule || []);
+}
+function renderTtzSession(session, errorText, source) {
+  const root = document.getElementById('ttzSessionStatus');
+  const label = document.getElementById('ttzSessionLabel');
+  const sourceEl = document.getElementById('ttzSessionSource');
+  if (!root || !label) return;
+  const automatic = session?.automatico !== false;
+  const connected = Boolean(session?.conectado);
+  const manual = String(source || '').toLowerCase().includes('manual');
+  root.className = 'ttz-auto-session' + (errorText ? ' warning' : '');
+  label.textContent = connected ? 'SESSÃO AUTOMÁTICA CONECTADA' : (manual ? 'SESSÃO AUTOMÁTICA · INTERVALOS MANUAIS' : (automatic ? 'SESSÃO AUTOMÁTICA · AGUARDANDO DADOS' : 'SESSÃO TTZ INDISPONÍVEL'));
+  if (sourceEl) sourceEl.textContent = String(source || 'MONITORAMENTO TTZ').toUpperCase();
+}
+function formatTtzRemaining(seconds) {
+  const total = Math.max(0, Math.ceil(Number(seconds) || 0));
+  return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+}
+function atualizarTtzCountdown() {
+  const el = document.getElementById('ttzNextCountdown');
+  if (!el || !ttzStatus?.next_zone) return;
+  const alvo = Number(ttzStatus.next_zone.timestamp);
+  if (Number.isFinite(alvo)) el.textContent = 'CONTAGEM: ' + formatTtzRemaining(alvo - agoraSincronizado());
+}
+function renderTtzStatus(ttz) {
+  if (!ttz) return;
+  ttzStatus = ttz;
+  renderTtzSession(ttz.session, '', ttz.source);
+  const current = ttz.current_zone || null, next = ttz.next_zone || null;
+  const currentName = document.getElementById('ttzCurrentName'), currentTime = document.getElementById('ttzCurrentTime'), currentMeta = document.getElementById('ttzCurrentMeta'), currentDot = document.getElementById('ttzCurrentDot');
+  const nextName = document.getElementById('ttzNextName'), nextTime = document.getElementById('ttzNextTime'), nextDot = document.getElementById('ttzNextDot');
+  if (currentName) currentName.textContent = current?.zone_name || 'Sem zona ativa';
+  if (currentTime) currentTime.textContent = current?.time || '--:--';
+  if (currentMeta) currentMeta.textContent = current ? ((current.description || '') + (current.currencies?.length ? ' · ' + current.currencies.join(', ') : '')) : 'Aguardando evento TTZ';
+  if (currentDot) { currentDot.style.background = current?.hex || 'rgba(255,255,255,0.15)'; currentDot.style.boxShadow = current?.hex ? `0 0 12px ${current.hex}` : ''; }
+  if (nextName) nextName.textContent = next?.zone_name || 'Sem próxima zona';
+  if (nextTime) nextTime.textContent = next?.time || '--:--';
+  if (nextDot) { nextDot.style.background = next?.hex || 'rgba(255,255,255,0.15)'; nextDot.style.boxShadow = next?.hex ? `0 0 12px ${next.hex}` : ''; }
+  renderTtzZoneLegend(ttzZoneList(ttz), current?.zone_name, next?.zone_name);
+  const live = document.getElementById('ttzLiveStatus');
+  const source = document.getElementById('ttzLiveSource');
+  const decision = document.getElementById('ttzDecision');
+  const error = document.getElementById('ttzError');
+  const pauseTotal = Boolean(ttz.todas_zonas_pausadas);
+  if (live) live.textContent = ttz.ativo ? (pauseTotal ? 'TTZ · PAUSE TOTAL · TODAS AS CORES PAUSADAS' : ('TTZ AO VIVO · ' + (ttz.acao || 'PAUSE') + ' · ' + (ttz.allowed ? 'ENTRADA PERMITIDA' : 'ENTRADA BLOQUEADA'))) : (current || next ? 'TTZ · MONITORAMENTO DE ZONAS · FILTRO DESATIVADO' : 'TTZ · AGUARDANDO CONFIGURAÇÃO');
+  if (source) source.textContent = String(ttz.source || 'ATUALIZAÇÃO AO VIVO').toUpperCase();
+  if (decision) { decision.className = 'ttz-decision ' + (ttz.ativo ? (ttz.allowed ? 'allowed' : 'blocked') : 'off'); decision.textContent = ttz.ativo ? ((ttz.allowed ? '✓ ' : '✕ ') + (pauseTotal ? 'TODAS AS ZONAS TTZ ESTÃO PAUSADAS — NENHUMA ENTRADA' : (ttz.reason || (ttz.allowed ? 'ENTRADA PERMITIDA' : 'ENTRADA BLOQUEADA')))) : 'TTZ FILTRO DESATIVADO — ZONAS EM MONITORAMENTO'; }
+  if (error) error.textContent = ttz.error || '';
+  atualizarTtzCountdown();
+}
+async function conectarTtzSessao() {
+  const email = document.getElementById('ttzLoginEmail')?.value.trim();
+  const senha = document.getElementById('ttzLoginSenha')?.value;
+  const msg = document.getElementById('ttzLoginMsg');
+  if (!email || !senha) { if (msg) msg.textContent = 'Informe e-mail e senha do TTZ.'; return; }
+  try {
+    const r = await API.post('/api/ttz/login', { email, password: senha });
+    if (r.ok) {
+      if (msg) msg.textContent = '';
+      const senhaInput = document.getElementById('ttzLoginSenha'); if (senhaInput) senhaInput.value = '';
+      if (r.ttz) renderTtzStatus(r.ttz);
+      showToast('✅ SESSÃO TTZ CONECTADA', 'green');
+    } else {
+      if (msg) msg.textContent = r.msg || 'Falha ao conectar TTZ';
+      showToast('❌ ' + (r.msg || 'Falha ao conectar TTZ'), 'red');
+    }
+  } catch (e) {
+    if (msg) msg.textContent = 'Erro de conexão ao conectar TTZ';
+    showToast('❌ Erro de conexão ao conectar TTZ', 'red');
+  }
+}
+async function desconectarTtzSessao() {
+  try {
+    const r = await API.post('/api/ttz/logout', {});
+    if (r.ttz) renderTtzStatus(r.ttz);
+    showToast('SESSÃO TTZ DESCONECTADA', 'yellow');
+  } catch (e) { showToast('❌ Erro de conexão ao desconectar TTZ', 'red'); }
+}
+async function salvarConfigTtz() {
+  try {
+    const r = await API.post('/api/config', coletarConfigTtz());
+    if (r.ok) { ttzConfigEditada = false; if (r.ttz) renderTtzStatus(r.ttz); showToast('✅ CONFIGURAÇÃO TTZ SALVA', 'green'); }
+    else showToast('❌ ' + (r.erro || r.msg || 'Erro ao salvar TTZ'), 'red');
+  } catch (e) { showToast('❌ Erro de conexão ao salvar TTZ', 'red'); }
+}
+
+const BACKEND_CONFIG_CONTROLS = [
+  {key:'bloquear_por_noticias', label:'Bloquear entradas por notícias', type:'bool', default:true},
+  {key:'noticias_ativas', label:'Ativar módulo de notícias', type:'bool', default:true},
+];
+function renderBackendControls() {
+  const grid = document.getElementById('backendConfigGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  BACKEND_CONFIG_CONTROLS.forEach(cfg => {
+    if (['bloquear_por_noticias', 'noticias_ativas'].includes(cfg.key)) return;
+    if (cfg.type === 'bool') {
+      const row = document.createElement('div');
+      row.className = 'toggle-row';
+      const text = document.createElement('span'); text.className = 'toggle-label'; text.textContent = cfg.label;
+      const label = document.createElement('label'); label.className = 'toggle';
+      const input = document.createElement('input'); input.type = 'checkbox'; input.id = 'backendCfg_' + cfg.key; input.dataset.backendKey = cfg.key; input.checked = cfg.default;
+      input.addEventListener('change', () => marcarControleBackendEditado(cfg.key));
+      const slider = document.createElement('span'); slider.className = 'toggle-slider';
+      label.appendChild(input); label.appendChild(slider); row.appendChild(text); row.appendChild(label); grid.appendChild(row);
+    } else {
+      const group = document.createElement('div'); group.className = 'input-group'; group.style.marginTop = '10px';
+      const label = document.createElement('label'); label.className = 'input-label'; label.textContent = cfg.label;
+      const input = document.createElement('input'); input.type = 'number'; input.id = 'backendCfg_' + cfg.key; input.dataset.backendKey = cfg.key; input.value = cfg.default; input.min = cfg.min; input.max = cfg.max; input.step = '1';
+      input.addEventListener('input', () => marcarControleBackendEditado(cfg.key));
+      group.appendChild(label); group.appendChild(input); grid.appendChild(group);
+    }
+  });
+}
+
+function coletarConfigBackend() {
+  const config = {};
+  BACKEND_CONFIG_CONTROLS.forEach(cfg => {
+    const input = document.getElementById('backendCfg_' + cfg.key);
+    if (!input) return;
+    config[cfg.key] = cfg.type === 'bool' ? input.checked : (parseInt(input.value) || cfg.default);
+  });
+  return config;
+}
+
+function aplicarConfigBackend(config) {
+  if (!config) return;
+  BACKEND_CONFIG_CONTROLS.forEach(cfg => {
+    if (backendControlesEditados.has(cfg.key)) return;
+    const input = document.getElementById('backendCfg_' + cfg.key);
+    if (!input || config[cfg.key] === undefined || config[cfg.key] === null) return;
+    if (cfg.type === 'bool') input.checked = Boolean(config[cfg.key]);
+    else input.value = config[cfg.key];
+  });
+  const entrada = document.getElementById('cfgEntrada');
+  if (entrada && !entradaEditada && config.valor_entrada !== undefined && config.valor_entrada !== null && document.activeElement !== entrada) entrada.value = config.valor_entrada;
+  const expiracao = document.getElementById('cfgExpiracao');
+  if (expiracao && !expiracaoEditada && config.expiracao !== undefined && config.expiracao !== null && document.activeElement !== expiracao) expiracao.value = config.expiracao;
+  const modalidade = document.getElementById('cfgModalidade');
+  if (modalidade && !modalidadeEditada && config.modalidade && document.activeElement !== modalidade) modalidade.value = config.modalidade;
+  const limite = document.getElementById('cfgLimite');
+  if (limite && !limiteEditado && config.limite_diario !== undefined && config.limite_diario !== null && document.activeElement !== limite) limite.value = config.limite_diario;
+  const horaIni = document.getElementById('cfgHoraIni');
+  if (horaIni && !horarioEditado && config.horario_inicio && document.activeElement !== horaIni) horaIni.value = config.horario_inicio;
+  const horaFim = document.getElementById('cfgHoraFim');
+  if (horaFim && !horarioEditado && config.horario_fim && document.activeElement !== horaFim) horaFim.value = config.horario_fim;
+  const atrasoMartingale = document.getElementById('cfgAtrasoMartingale');
+  if (atrasoMartingale && config.atraso_martingale_segundos !== undefined && config.atraso_martingale_segundos !== null) {
+    atrasoMartingale.value = config.atraso_martingale_segundos;
+  }
+  const martingaleModo = document.getElementById('cfgMartingaleModo');
+  if (martingaleModo && config.martingale_modo) {
+    martingaleModo.value = config.martingale_modo;
+  }
+  const stopWin = document.getElementById('cfgStopWin');
+  if (stopWin && !stopWinEditado && config.stop_win !== undefined && config.stop_win !== null && document.activeElement !== stopWin) {
+    stopWin.value = config.stop_win;
+  }
+  const stopLoss = document.getElementById('cfgStopLoss');
+  if (stopLoss && !stopLossEditado && config.stop_loss !== undefined && config.stop_loss !== null && document.activeElement !== stopLoss) {
+    stopLoss.value = config.stop_loss;
+  }
+  const lossesLimite = document.getElementById('cfgLossesSeguidosLimite');
+  if (lossesLimite && !lossesSeguidosEditado && config.losses_seguidos_limite !== undefined && config.losses_seguidos_limite !== null && document.activeElement !== lossesLimite) {
+    lossesLimite.value = config.losses_seguidos_limite;
+  }
+  const lossesPausaMin = document.getElementById('cfgLossesSeguidosPausaMin');
+  if (lossesPausaMin && !lossesSeguidosEditado && config.losses_seguidos_pausa_min !== undefined && config.losses_seguidos_pausa_min !== null && document.activeElement !== lossesPausaMin) {
+    lossesPausaMin.value = config.losses_seguidos_pausa_min;
+  }
+  // Martingale e Soros são estados independentes e ambos podem permanecer
+  // ativos. O polling só atualiza os campos quando eles não estão em edição.
+  const cbGale = document.getElementById('cfgUsarGale');
+  if (cbGale && !usarGaleEditada && config.usar_gale !== undefined && config.usar_gale !== null && document.activeElement !== cbGale) {
+    const val = Boolean(config.usar_gale);
+    if (cbGale.checked !== val) {
+      cbGale.checked = val;
+      document.getElementById('galeOpts').style.display = val ? 'block' : 'none';
+    }
+  }
+  const cbSoros = document.getElementById('cfgUsarSoros');
+  if (cbSoros && !sorosConfigEditada && config.usar_soros !== undefined && config.usar_soros !== null && document.activeElement !== cbSoros) {
+    const val = Boolean(config.usar_soros);
+    if (cbSoros.checked !== val) {
+      cbSoros.checked = val;
+      const opcoesSoros = document.getElementById('sorosOpts');
+      if (opcoesSoros) opcoesSoros.style.display = val ? 'block' : 'none';
+    }
+  }
+  const niveisGale = document.getElementById('cfgNiveisGale');
+  if (niveisGale && !galeConfigEditada && config.niveis_gale !== undefined && config.niveis_gale !== null && document.activeElement !== niveisGale) {
+    niveisGale.value = config.niveis_gale;
+  }
+  const fatorGale = document.getElementById('cfgFatorGale');
+  if (fatorGale && !galeConfigEditada && config.fator_gale !== undefined && config.fator_gale !== null && document.activeElement !== fatorGale) {
+    fatorGale.value = config.fator_gale;
+  }
+  const niveisSoros = document.getElementById('cfgNiveisSoros');
+  if (niveisSoros && !sorosConfigEditada && config.niveis_soros !== undefined && config.niveis_soros !== null && document.activeElement !== niveisSoros) {
+    niveisSoros.value = config.niveis_soros;
+  }
+  const reinvSoros = document.getElementById('cfgReinvestimentoSoros');
+  if (reinvSoros && !sorosConfigEditada && config.reinvestimento_soros !== undefined && config.reinvestimento_soros !== null && document.activeElement !== reinvSoros) {
+    reinvSoros.value = config.reinvestimento_soros;
+  }
+  const tempoAntesNoticia = document.getElementById('cfgTempoAntesNoticia');
+  if (tempoAntesNoticia && config.tempo_antes_noticia !== undefined && config.tempo_antes_noticia !== null) {
+    tempoAntesNoticia.value = config.tempo_antes_noticia;
+  }
+  const tempoDepoisNoticia = document.getElementById('cfgTempoDepoisNoticia');
+  if (tempoDepoisNoticia && config.tempo_depois_noticia !== undefined && config.tempo_depois_noticia !== null) {
+    tempoDepoisNoticia.value = config.tempo_depois_noticia;
+  }
+}
+
+async function salvarScriptLua() {
+  const input = document.getElementById('scriptLua');
+  const status = document.getElementById('scriptLuaStatus');
+  const script_lua = input?.value || '';
+  try {
+    const r = await API.post('/api/config', { script_lua });
+    if (r.ok) {
+      if (status) { status.textContent = '✓ Script Lua Quadcode autorizado e salvo.'; status.style.color = 'var(--green)'; }
+      showToast('✓ SCRIPT AUTORIZADO', 'green');
+    } else {
+      if (status) { status.textContent = '✕ ' + (r.erro || r.msg || 'Script rejeitado'); status.style.color = 'var(--red)'; }
+      showToast('✕ SCRIPT REJEITADO', 'red');
+    }
+  } catch (e) { if (status) status.textContent = 'Erro de conexão ao autorizar o script.'; showToast('✕ ERRO DE CONEXÃO', 'red'); }
+}
+function aplicarScriptLua(config) {
+  const input = document.getElementById('scriptLua');
+  const status = document.getElementById('scriptLuaStatus');
+  if (input && config && typeof config.script_lua === 'string' && document.activeElement !== input) input.value = config.script_lua;
+  if (status && config) {
+    status.textContent = config.script_lua_autorizado ? '✓ Script Lua Quadcode autorizado.' : (config.script_lua_erro || 'Nenhum script autorizado.');
+    status.style.color = config.script_lua_autorizado ? 'var(--green)' : 'var(--yellow)';
+  }
+}
+async function salvarConfig(silencioso = false) {
+  const config = {
+    valor_entrada: parseFloat(document.getElementById('cfgEntrada').value) || 2,
+    expiracao: parseInt(document.getElementById('cfgExpiracao').value) || 1,
+    modalidade: document.getElementById('cfgModalidade')?.value || 'ambas',
+    ativo_manual: document.getElementById('ativoManual')?.value || 'EURUSD',
+    atraso_martingale_segundos: parseInt(document.getElementById('cfgAtrasoMartingale').value, 10) || 0,
+    martingale_modo: document.getElementById('cfgMartingaleModo').value || 'proxima_vela',
+    losses_seguidos_limite: parseInt(document.getElementById('cfgLossesSeguidosLimite').value, 10) || 0,
+    losses_seguidos_pausa_min: parseFloat(document.getElementById('cfgLossesSeguidosPausaMin').value) || 0,
+    modo_auto: !document.getElementById('toggleManual').checked,
+    stop_win: parseFloat(document.getElementById('cfgStopWin').value) || 100,
+    stop_loss: parseFloat(document.getElementById('cfgStopLoss').value) || 100,
+    limite_diario: parseInt(document.getElementById('cfgLimite').value) || 1000,
+    usar_gale: document.getElementById('cfgUsarGale').checked,
+    niveis_gale: parseInt(document.getElementById('cfgNiveisGale').value) || 2,
+    fator_gale: parseFloat(document.getElementById('cfgFatorGale').value) || 2.2,
+    horario_inicio: document.getElementById('cfgHoraIni').value || '00:00',
+    horario_fim: document.getElementById('cfgHoraFim').value || '23:59',
+    usar_soros: document.getElementById('cfgUsarSoros').checked,
+    niveis_soros: parseInt(document.getElementById('cfgNiveisSoros').value) || 3,
+    reinvestimento_soros: Math.max(0, Math.min(100, parseInt(document.getElementById('cfgReinvestimentoSoros').value, 10) || 0)),
+    tempo_antes_noticia: Math.max(0, parseInt(document.getElementById('cfgTempoAntesNoticia').value, 10) || 0),
+    tempo_depois_noticia: Math.max(0, parseInt(document.getElementById('cfgTempoDepoisNoticia').value, 10) || 0),
+    ...coletarConfigTtz()
+  };
+  Object.assign(config, coletarConfigBackend());
+  config.script_lua = document.getElementById("scriptLua")?.value || "";
+
+  try {
+    const r = await API.post('/api/config', config);
+    if (r.ok) {
+      sorosConfigEditada = false;
+      martingaleModoEditado = false;
+      noticiasConfigEditada = false;
+      noticiasControlesEditados = false;
+      backendControlesEditados.clear();
+      atrasoMartingaleEditado = false;
+      lossesSeguidosEditado = false;
+      galeConfigEditada = false;
+      entradaEditada = false;
+      usarGaleEditada = false;
+      expiracaoEditada = false;
+      modalidadeEditada = false;
+      limiteEditado = false;
+      horarioEditado = false;
+      stopWinEditado = false;
+      stopLossEditado = false;
+      ttzConfigEditada = false;
+      if (!silencioso) showToast('✅ CONFIGURAÇÕES SALVAS', 'green');
+      return true;
+    } else {
+      showToast('❌ ' + (r.erro || r.msg || 'Erro ao salvar'), 'red');
+      return false;
+    }
+  } catch(e) {
+    showToast('❌ Erro de conexão', 'red');
+    return false;
+  }
+}
+async function salvarConfigNoticias() {
+  const antes = Math.max(0, parseInt(document.getElementById('cfgTempoAntesNoticia').value, 10) || 0);
+  const depois = Math.max(0, parseInt(document.getElementById('cfgTempoDepoisNoticia').value, 10) || 0);
+  try {
+    const r = await API.post('/api/config', {
+      tempo_antes_noticia: Math.min(1440, antes),
+      tempo_depois_noticia: Math.min(1440, depois),
+      bloquear_por_noticias: document.getElementById('backendCfg_bloquear_por_noticias').checked,
+      noticias_ativas: document.getElementById('backendCfg_noticias_ativas').checked
+    });
+    if (r.ok) {
+      noticiasConfigEditada = false;
+      noticiasControlesEditados = false;
+      backendControlesEditados.delete('bloquear_por_noticias');
+      backendControlesEditados.delete('noticias_ativas');
+      showToast('✅ CONFIGURAÇÕES DE NOTÍCIAS SALVAS', 'green');
+    } else showToast('❌ ' + (r.erro || r.msg || 'Erro ao salvar'), 'red');
+  } catch(e) {
+    showToast('❌ Erro de conexão', 'red');
+  }
+}
+async function trocarConta() {
+
+  const tipo = document.getElementById('cfgConta').value;
+  try {
+    const r = await API.post('/api/trocar_conta', { tipo });
+    if (r.ok) {
+      showToast('✅ CONTA ALTERADA', 'green');
+    } else {
+      showToast('❌ ' + (r.erro || r.msg || 'Erro ao trocar'), 'red');
+    }
+  } catch(e) {
+    showToast('❌ Erro de conexão', 'red');
+  }
+}
+
+// ============================================================
+// NOTÍCIAS
+// ============================================================
+let filtroNoticias = 'todas';
+function normalizarImpactoNoticia(noticia) {
+  const bruto = noticia && (noticia.impacto ?? noticia.nivel_impacto ?? noticia.impact);
+  if (typeof bruto === 'number') return bruto >= 3 ? 'alto' : bruto === 2 ? 'medio' : 'baixo';
+  const texto = String(bruto || '').trim().toLowerCase();
+  if (texto.includes('alto') || texto === '3') return 'alto';
+  if (texto.includes('medio') || texto === '2') return 'medio';
+  return 'baixo';
+}
+function filtrarNoticias(filtro, botao) {
+  filtroNoticias = filtro;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  if (botao) botao.classList.add('active');
+  renderizarNoticias();
+}
+
+async function atualizarNoticias() {
+  try {
+    const r = await API.get('/api/noticias');
+    if (r.ok && r.noticias) {
+      window.noticiasData = r.noticias;
+      renderizarNoticias();
+    }
+  } catch(e) {}
+  setTimeout(atualizarNoticias, 300000); // 5 minutos
+}
+
+function renderizarNoticias() {
+  const data = window.noticiasData || {};
+  const proximas = data.proximas || [];
+  const andamento = data.em_andamento || [];
+  const finalizadas = data.finalizadas || [];
+
+  document.getElementById('countProximas').textContent = proximas.length;
+  document.getElementById('countAndamento').textContent = andamento.length;
+  document.getElementById('countFinalizadas').textContent = finalizadas.length;
+
+  function filtrarPorImpacto(lista) {
+    if (filtroNoticias === 'todas') return lista;
+    return lista.filter(n => normalizarImpactoNoticia(n) === filtroNoticias);
+  }
+  function renderNoticia(noticia) {
+    const impactoNivel = normalizarImpactoNoticia(noticia);
+    const impactoClass = 'impacto-' + impactoNivel;
+    const horaNoticia = noticia.hora || noticia.horario || '--:--';
+
+    return `
+      <div class="noticia-item">
+        <div class="noticia-header">
+          <span class="noticia-moeda">${noticia.moeda}</span>
+          <span class="noticia-hora" title="Horário da notícia">${horaNoticia}</span>
+        </div>
+        <div class="noticia-titulo">${noticia.titulo}</div>
+        <div class="noticia-footer">
+          <span class="noticia-impacto ${impactoClass}">${noticia.impacto}</span>
+          <span class="noticia-status ${noticia.status === 'Em breve' ? 'status-breve' : noticia.status === 'Ao vivo' ? 'status-andamento' : 'status-finalizado'}">${noticia.tempo_restante}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const proximasFiltered = filtrarPorImpacto(proximas);
+  const andamentoFiltered = filtrarPorImpacto(andamento);
+  const finalizadasFiltered = filtrarPorImpacto(finalizadas);
+
+  document.getElementById('proximasNoticiasDiv').innerHTML = proximasFiltered.length > 0 
+    ? proximasFiltered.map(renderNoticia).join('')
+    : '<div class="empty-state">Nenhuma notícia próxima</div>';
+
+  document.getElementById('andamentoNoticiasDiv').innerHTML = andamentoFiltered.length > 0 
+    ? andamentoFiltered.map(renderNoticia).join('')
+    : '<div class="empty-state">Nenhuma notícia em andamento</div>';
+
+  document.getElementById('finalizadasNoticiasDiv').innerHTML = finalizadasFiltered.length > 0 
+    ? finalizadasFiltered.map(renderNoticia).join('')
+    : '<div class="empty-state">Nenhuma notícia finalizada</div>';
+}
+
+// ============================================================
+// PAINEL DE SINAL (timer de contagem regressiva + exibição do sinal)
+// ============================================================
+let operacaoAtual = null; // preenchido a partir de s.operacao_atual em applyStatus
+let ultimoStatus = null;
+let serverClockOffsetSec = 0;
+let timerInterval;
+let brasiliaClockInterval;
+let martingaleModoEditado = false;
+let noticiasConfigEditada = false;
+let noticiasControlesEditados = false;
+const backendControlesEditados = new Set();
+let atrasoMartingaleEditado = false;
+let lossesSeguidosEditado = false;
+let galeConfigEditada = false;
+let entradaEditada = false;
+let usarGaleEditada = false;
+let expiracaoEditada = false;
+let modalidadeEditada = false;
+let limiteEditado = false;
+let horarioEditado = false;
+let stopWinEditado = false;
+let stopLossEditado = false;
+
+function marcarMartingaleModoEditado() {
+  martingaleModoEditado = true;
+}
+
+function marcarConfigNoticiaEditada() {
+  noticiasConfigEditada = true;
+}
+
+function marcarControlesNoticiaEditados() {
+  noticiasControlesEditados = true;
+}
+
+function marcarControleBackendEditado(chave) {
+  backendControlesEditados.add(chave);
+}
+
+function marcarAtrasoMartingaleEditado() {
+  atrasoMartingaleEditado = true;
+}
+
+function marcarLossesSeguidosEditado() {
+  lossesSeguidosEditado = true;
+}
+
+function marcarGaleConfigEditada() {
+  galeConfigEditada = true;
+}
+
+function marcarEntradaEditada() {
+  entradaEditada = true;
+}
+
+function marcarUsarGaleEditada() {
+  usarGaleEditada = true;
+}
+
+function marcarExpiracaoEditada() {
+  expiracaoEditada = true;
+}
+
+function marcarModalidadeEditada() {
+  modalidadeEditada = true;
+}
+
+function marcarLimiteEditado() {
+  limiteEditado = true;
+}
+
+function marcarHorarioEditado() {
+  horarioEditado = true;
+}
+
+function marcarStopWinEditado() {
+  stopWinEditado = true;
+}
+
+function marcarStopLossEditado() {
+  stopLossEditado = true;
+}
+
+function atualizarRelogioBrasilia() {
+  const el = document.getElementById('brasiliaClock');
+  if (!el) return;
+  try {
+    const texto = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(new Date());
+    el.textContent = texto;
+  } catch (e) {
+    el.textContent = new Date().toLocaleTimeString('pt-BR', { hour12:false });
+  }
+}
+
+function iniciarRelogioBrasilia() {
+  if (brasiliaClockInterval) clearInterval(brasiliaClockInterval);
+  atualizarRelogioBrasilia();
+  brasiliaClockInterval = setInterval(atualizarRelogioBrasilia, 1000);
+}
+
+function iniciarTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(atualizarPainelSinal, 1000);
+  atualizarPainelSinal();
+  iniciarRelogioBrasilia();
+}
+
+function normalizarOperacao(op) {
+  if (!op || typeof op !== 'object') return null;
+  const expiraEm = Number(op.expira_em);
+  if (!Number.isFinite(expiraEm) || expiraEm <= 0) return null;
+  return {
+    ...op,
+    expira_em: expiraEm,
+    direcao: String(op.direcao || '').toUpperCase()
+  };
+}
+
+function agoraSincronizado() {
+  return Date.now() / 1000 + serverClockOffsetSec;
+}
+
+function escreverContador(segundos) {
+  const timerMin = document.getElementById('timerMin');
+  const timerSec = document.getElementById('timerSec');
+  if (!timerMin || !timerSec) return;
+  if (segundos === null || segundos === undefined || !Number.isFinite(Number(segundos))) {
+    timerMin.textContent = '--';
+    timerSec.textContent = '--';
+    return;
+  }
+  const restante = Math.max(0, Math.ceil(Number(segundos)));
+  timerMin.textContent = String(Math.floor(restante / 60)).padStart(2, '0');
+  timerSec.textContent = String(restante % 60).padStart(2, '0');
+}
+
+function proximoFechamento(tfMin) {
+  const timeframe = Number(tfMin);
+  if (!Number.isFinite(timeframe) || timeframe <= 0) return null;
+  const periodo = timeframe * 60;
+  const agora = agoraSincronizado();
+  return Math.ceil(agora / periodo) * periodo;
+}
+
+function atualizarPainelSinal() {
+  atualizarTtzCountdown();
+  const ring = document.getElementById('signalRing');
+  const text = document.getElementById('signalText');
+  const pair = document.getElementById('signalPair');
+  if (!ring || !text || !pair) return;
+
+  if (!operacaoAtual) {
+    ring.classList.remove('call-ring', 'put-ring');
+    text.classList.remove('call', 'put');
+    text.textContent = 'AGUARDANDO';
+
+    // Enquanto o robô estiver rodando, o painel mostra o tempo até o próximo
+    // fechamento de vela. Assim o contador não fica preso em 00:00 enquanto
+    // o scanner aguarda o próximo sinal.
+    const rodando = Boolean(ultimoStatus && ultimoStatus.running);
+    if (rodando) {
+      const configuracoes = ultimoStatus.configuracoes || {};
+      const timeframe = Number(ultimoStatus.expiracao_operacao || configuracoes.expiracao || 1);
+      const fechamento = proximoFechamento(timeframe);
+      const ativoEmFoco = ultimoStatus.ativo_em_foco || ultimoStatus.confluencia_estrategias?.ativo;
+      pair.textContent = (ativoEmFoco ? ativoEmFoco + ' · ' : '') + 'PRÓXIMO CICLO · M' + timeframe;
+      escreverContador(fechamento === null ? null : fechamento - agoraSincronizado());
+    } else {
+      pair.textContent = '—';
+      escreverContador(null);
+    }
+    return;
+  }
+
+  const isCall = operacaoAtual.direcao === 'CALL';
+  ring.classList.toggle('call-ring', isCall);
+  ring.classList.toggle('put-ring', !isCall);
+  text.classList.toggle('call', isCall);
+  text.classList.toggle('put', !isCall);
+  text.textContent = (isCall ? '📈 CALL' : '📉 PUT');
+  const modalidadeAtual = operacaoAtual.modalidade ? ' · ' + String(operacaoAtual.modalidade).toUpperCase() : '';
+  pair.textContent = operacaoAtual.ativo + ' · ' + operacaoAtual.tf + modalidadeAtual
+    + (operacaoAtual.gale > 0 ? ' · GALE ' + operacaoAtual.gale : '');
+
+  // Usa o relógio sincronizado e ceil para não antecipar o zero por causa de
+  // diferenças entre o relógio do celular e o relógio do backend.
+  escreverContador(operacaoAtual.expira_em - agoraSincronizado());
+}
+
+// ============================================================
+// POLLING
+// ============================================================
+let pollingInterval;
+function iniciarPolling() {
+  iniciarTimer();
+  iniciarWebSocket();
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(pollStatus, 3000);
+  pollStatus();
+}
+
+async function pollStatus() {
+  try {
+    const s = await API.get('/api/status');
+    applyStatus(s);
+  } catch(e) {}
+}
+
+function atualizarAvisoPausaLosses(pausaLosses) {
+  const aviso = document.getElementById('pausaLossesAviso');
+  const restanteEl = document.getElementById('pausaLossesRestante');
+  if (!aviso || !restanteEl) return;
+  const ativa = Boolean(pausaLosses && pausaLosses.ativa);
+  aviso.style.display = ativa ? 'block' : 'none';
+  if (ativa) {
+    const seg = Math.max(0, Number(pausaLosses.restante_seg || 0));
+    const min = Math.floor(seg / 60);
+    const s = Math.floor(seg % 60);
+    restanteEl.textContent = `${min}min ${s.toString().padStart(2, '0')}s`;
+  }
+}
+
+function applyStatus(s) {
+  try {
+    ultimoStatus = s || {};
+    const agoraServidor = Number(ultimoStatus.agora_epoch);
+    if (Number.isFinite(agoraServidor) && agoraServidor > 0) {
+      serverClockOffsetSec = agoraServidor - Date.now() / 1000;
+    }
+    // Atualiza o estado do timer antes das demais renderizações. Se algum
+    // módulo visual falhar, o contador ainda continuará funcionando.
+    operacaoAtual = normalizarOperacao(ultimoStatus.operacao_atual);
+    atualizarPainelSinal();
+
+    s.saldo = Number(s.saldo || 0);
+    const relogio = document.getElementById('brasiliaClock');
+    if (relogio && s.hora_brasilia) relogio.title = `Horário de Brasília — ${s.fuso_horario || 'America/Sao_Paulo'}`;
+    s.wins = Number(s.wins || 0);
+    s.losses = Number(s.losses || 0);
+    s.winrate = Number(s.winrate || 0);
+    s.total_ops = Number(s.total_ops || 0);
+    s.empates = Number(s.empates || 0);
+    s.saldo_acumulado = Number(s.saldo_acumulado || 0);
+    s.lucro_bruto = Number(s.lucro_bruto || 0);
+    s.prejuizo_bruto = Number(s.prejuizo_bruto || 0);
+    s.limite_diario = Number(s.limite_diario || 1000);
+    s.em_operacao_qt = Number(s.em_operacao_qt || (Array.isArray(s.em_operacao) ? s.em_operacao.length : 0));
+    s.pares_scan = Number(s.pares_scan || 0);
+    atualizarAvisoPausaLosses(s.pausa_losses);
+    const configuracoesStatus = s.configuracoes || {};
+    const modoSelecionado = document.getElementById('cfgMartingaleModo');
+    const configuracoesParaAplicar = Object.assign({}, configuracoesStatus);
+    // Enquanto o usuário ainda não salvou a alteração, o polling/WebSocket
+    // não pode restaurar o valor antigo vindo do backend.
+    if (martingaleModoEditado && modoSelecionado) {
+      configuracoesParaAplicar.martingale_modo = modoSelecionado.value;
+    }
+    const antesNoticia = document.getElementById('cfgTempoAntesNoticia');
+    const depoisNoticia = document.getElementById('cfgTempoDepoisNoticia');
+    if (noticiasConfigEditada) {
+      if (antesNoticia) configuracoesParaAplicar.tempo_antes_noticia = antesNoticia.value;
+      if (depoisNoticia) configuracoesParaAplicar.tempo_depois_noticia = depoisNoticia.value;
+    }
+    const bloquearPorNoticias = document.getElementById('backendCfg_bloquear_por_noticias');
+    const noticiasAtivas = document.getElementById('backendCfg_noticias_ativas');
+    if (noticiasControlesEditados) {
+      if (bloquearPorNoticias) configuracoesParaAplicar.bloquear_por_noticias = bloquearPorNoticias.checked;
+      if (noticiasAtivas) configuracoesParaAplicar.noticias_ativas = noticiasAtivas.checked;
+    }
+    const atrasoMartingale = document.getElementById('cfgAtrasoMartingale');
+    if (atrasoMartingaleEditado && atrasoMartingale) {
+      configuracoesParaAplicar.atraso_martingale_segundos = atrasoMartingale.value;
+    }
+    aplicarConfigBackend(configuracoesParaAplicar);
+    const ttzConfigVisual = Object.assign({}, configuracoesParaAplicar, {
+      zonas: s.ttz?.zonas || TTZ_DEFAULT_ZONES,
+      ttz_schedule: s.ttz?.schedule || configuracoesParaAplicar.ttz_schedule || []
+    });
+    aplicarConfigTtz(ttzConfigVisual);
+    renderTtzStatus(s.ttz);
+
+    if (s.saldo !== undefined && s.saldo !== null) {
+        const saldoStr = 'R$ ' + Number(s.saldo).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        document.getElementById('connSaldo').textContent = saldoStr;
+    }
+
+    document.getElementById('statWins').textContent = s.wins;
+    document.getElementById('statLosses').textContent = s.losses;
+    document.getElementById('statWR').textContent = s.winrate + '%';
+    document.getElementById('statOps').textContent = s.total_ops;
+    document.getElementById('statLimiteDiario').textContent = s.limite_diario;
+    document.getElementById('statEmpates').textContent = s.empates;
+
+    const el = document.getElementById('saldoAcum');
+    const val = s.saldo_acumulado;
+    el.textContent = (val >= 0 ? '+' : '') + 'R$ ' + Math.abs(val).toFixed(2);
+    el.className = 'saldo-acum ' + (val >= 0 ? 'pos' : 'neg');
+
+    document.getElementById('statLucroBruto').textContent = '+R$ ' + s.lucro_bruto.toFixed(2);
+    document.getElementById('statPrejuizoBruto').textContent = '-R$ ' + Math.abs(s.prejuizo_bruto).toFixed(2);
+
+    document.getElementById('wrBarFill').style.width = Math.min(s.winrate, 100) + '%';
+
+    const otcTag = s.modo_otc ? ' 🌙 modo OTC' : '';
+    if (s.running) {
+      document.getElementById('scanSpinner').classList.add('active');
+      document.getElementById('scanBar').classList.add('active');
+      const qt = s.em_operacao_qt || 0;
+      const pares = s.pares_scan || 0;
+      const modalidade = String(s.configuracoes?.modalidade || 'ambas').toUpperCase();
+      document.getElementById('scanStatusText').textContent = `🔍 Escaneando ${pares} ativos — ${qt} em análise · ${modalidade}${otcTag}`;
+    } else {
+      document.getElementById('scanSpinner').classList.remove('active');
+      document.getElementById('scanBar').classList.remove('active');
+      const pares = s.pares_scan || 0;
+      const modalidade = String(s.configuracoes?.modalidade || 'ambas').toUpperCase();
+      document.getElementById('scanStatusText').textContent = (pares > 0 ? `Bot pausado — ${pares} ativos disponíveis · ${modalidade}` : 'Bot pausado') + otcTag;
+    }
+
+    renderEmOperacao(s.em_operacao || [], s.em_operacao_qt || 0);
+
+    if (s.scan_log && s.scan_log.length > 0) {
+      renderScanLog(s.scan_log);
+    }
+
+    if (s.ultima_op) {
+      renderUltimaOp(s.ultima_op);
+    }
+
+    if (s.historico && s.historico.length > 0) {
+      renderHistorico(s.historico);
+    }
+
+    if (s.soros_status) {
+      renderSorosStatus(s.soros_status);
+    }
+
+    atualizarPainelSinal();
+
+  } catch(e) {}
+}
+
+// ============================================================
+// WEBSOCKET
+// ============================================================
+let socket = null;
+function iniciarWebSocket() {
+  if (socket) { try { socket.disconnect(); } catch(e) {} }
+  socket = io(API.base, { transports: ['polling'], upgrade: false });
+  socket.on('connect', () => {
+    console.log('WebSocket conectado');
+  });
+  socket.on('status_update', (s) => applyStatus(s));
+  socket.on('disconnect', () => {
+    console.log('WebSocket desconectado');
+  });
+}
+
+// ============================================================
+// RENDERS
+// ============================================================
+function renderEmOperacao(pares, qt) {
+  const card = document.getElementById('cardEmOp');
+  const div  = document.getElementById('emOperacaoDiv');
+  const badge = document.getElementById('qtEmOp');
+  
+  if (!pares || pares.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+  badge.textContent = pares.length + ' pares';
+  div.innerHTML = pares.map(p => {
+    const analisando = p.startsWith('Analisando');
+    const cor = analisando ? 'rgba(255,255,255,0.4)' : '#00c3ff';
+    const bg  = analisando ? 'rgba(255,255,255,0.06)' : 'rgba(0,195,255,0.12)';
+    const bd  = analisando ? 'rgba(255,255,255,0.15)' : 'rgba(0,195,255,0.3)';
+    return `<span style="background:${bg};border:1px solid ${bd};border-radius:8px;padding:4px 10px;font-family:'Orbitron',monospace;font-size:9px;color:${cor};letter-spacing:1px;">${p}</span>`;
+  }).join('');
+}
+
+function renderScanLog(logs) {
+  const div = document.getElementById('scanLogDiv');
+  div.innerHTML = logs.map(linha => {
+    let cor = 'rgba(255,255,255,0.35)';
+    if (linha.includes('Sinal:') || linha.includes('WIN') || linha.includes('win') || linha.includes('✅'))
+      cor = '#00ff88';
+    else if (linha.includes('loss') || linha.includes('Loss') || linha.includes('❌') || linha.includes('Erro'))
+      cor = '#ff3b5c';
+    else if (linha.includes('Escaneando') || linha.includes('pares') || linha.includes('🔍'))
+      cor = '#00c3ff';
+    else if (linha.includes('Stop') || linha.includes('Limite') || linha.includes('⚠️'))
+      cor = '#f59e0b';
+    return `<div style="color:${cor};padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${linha}</div>`;
+  }).join('');
+}
+
+function renderUltimaOp(op) {
+  const div = document.getElementById('ultimaOpDiv');
+  const card = document.getElementById('ultimaOpCard');
+  div.style.display = 'block';
+
+  const isWin = op.resultado === 'win';
+  const isEmp = op.resultado === 'empate';
+  const lucro = op.lucro;
+  const lucroStr = (lucro >= 0 ? '+' : '') + 'R$ ' + Math.abs(lucro).toFixed(2);
+  const cor = isWin ? '#00ff88' : isEmp ? '#00c3ff' : '#ff3b5c';
+  const icon = isWin ? '✅' : isEmp ? '➖' : '❌';
+  const galeTag = (op.gale && op.gale > 0) ? `<span style="font-size:9px;color:#f59e0b;border:1px solid rgba(245,158,11,0.4);border-radius:6px;padding:1px 6px;margin-left:6px;">GALE ${op.gale}${op.fator_gale ? ' ×' + op.fator_gale : ''}</span>` : '';
+  const sorosTag = (op.soros_nivel && op.soros_nivel > 0) ? `<span style="font-size:9px;color:#00c3ff;border:1px solid rgba(0,195,255,0.4);border-radius:6px;padding:1px 6px;margin-left:6px;">SOROS ${op.soros_nivel}${op.soros_pct !== undefined && op.soros_pct !== null ? ' ' + op.soros_pct + '%' : ''}</span>` : '';
+  const modalidadeTag = op.modalidade ? `<span style="font-size:9px;color:#a855f7;border:1px solid rgba(168,85,247,0.45);border-radius:6px;padding:1px 6px;margin-left:6px;">${String(op.modalidade).toUpperCase()}</span>` : '';
+
+  card.innerHTML = `
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:white;">${op.ativo}${modalidadeTag}${galeTag}${sorosTag}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${op.ts} · ${op.tf || '-'}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="hist-dir ${op.direcao.toLowerCase()}">${op.direcao}</span>
+      <span style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:${cor};">${icon} ${lucroStr}</span>
+    </div>
+  `;
+}
+
+function renderHistorico(hist) {
+  const el = document.getElementById('historico');
+  el.innerHTML = hist.map((op, i) => {
+    const isWin = op.resultado === 'win';
+    const isEmp = op.resultado === 'empate';
+    const lucro = op.lucro;
+    const lucroStr = (lucro >= 0 ? '+' : '') + 'R$ ' + Math.abs(lucro).toFixed(2);
+    const cls = isWin ? 'win' : isEmp ? 'empate' : 'loss';
+    const lucroClass = lucro > 0 ? 'pos' : lucro < 0 ? 'neg' : 'zero';
+    const icon = isWin ? '✅' : isEmp ? '➖' : '❌';
+    const galeTag = (op.gale && op.gale > 0) ? `<span style="font-size:8px;color:#f59e0b;border:1px solid rgba(245,158,11,0.4);border-radius:6px;padding:0 5px;margin-left:5px;">GALE ${op.gale}${op.fator_gale ? ' ×' + op.fator_gale : ''}</span>` : '';
+    const sorosTag = (op.soros_nivel && op.soros_nivel > 0) ? `<span style="font-size:8px;color:#00c3ff;border:1px solid rgba(0,195,255,0.4);border-radius:6px;padding:0 5px;margin-left:5px;">SOROS ${op.soros_nivel}${op.soros_pct !== undefined && op.soros_pct !== null ? ' ' + op.soros_pct + '%' : ''}</span>` : '';
+    const modalidadeTag = op.modalidade ? `<span style="font-size:8px;color:#a855f7;border:1px solid rgba(168,85,247,0.45);border-radius:6px;padding:0 5px;margin-left:5px;">${String(op.modalidade).toUpperCase()}</span>` : '';
+    const saldoApos = (op.saldo_apos !== undefined && op.saldo_apos !== null) ? ` · saldo R$ ${op.saldo_apos}` : '';
+    return `
+      <div class="hist-item ${cls}" style="animation-delay:${i*0.05}s">
+        <div>
+          <div class="hist-ativo">${op.ativo}${modalidadeTag}${galeTag}${sorosTag}</div>
+          <div class="hist-ts">${op.ts} · ${op.tf || '-'} · R$ ${op.valor}${saldoApos}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="hist-dir ${op.direcao.toLowerCase()}">${op.direcao}</span>
+          <span class="hist-lucro ${lucroClass}">${icon} ${lucroStr}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSentimentoTraders(sentimento) {
+  const line = document.getElementById('sentimentoTradersLine');
+  const ativoEl = document.getElementById('sentimentoTradersAtivo');
+  const callEl = document.getElementById('sentimentoCall');
+  const putEl = document.getElementById('sentimentoPut');
+  const meterCall = document.getElementById('sentimentoMeterCall');
+  const meterPut = document.getElementById('sentimentoMeterPut');
+  const statusEl = document.getElementById('sentimentoTradersStatus');
+  const badge = document.getElementById('sentimentoTradersBadge');
+  if (!line || !sentimento) return;
+
+  const ativoEmFoco = ultimoStatus?.ativo_em_foco;
+  const ativo = sentimento.ativo || '—';
+  const call = Number(sentimento.call_pct);
+  const put = Number(sentimento.put_pct);
+  const valido = Number.isFinite(call) && Number.isFinite(put) && (!ativoEmFoco || ativo === ativoEmFoco);
+  // Ausência de dados ou par divergente não é sentimento neutro: não mascarar como 50/50.
+  const callPct = valido ? Math.max(0, Math.min(100, call)) : 0;
+  const putPct = valido ? Math.max(0, Math.min(100, put)) : 0;
+  const direcao = String(sentimento.direcao || '').toLowerCase();
+  const status = sentimento.status || (ultimoStatus.conectado ? 'Aguardando dados' : 'Aguardando conexão com a corretora');
+
+  ativoEl.textContent = ativo;
+  callEl.textContent = 'CALL ' + (valido ? callPct.toFixed(1) + '%' : '—');
+  putEl.textContent = 'PUT ' + (valido ? putPct.toFixed(1) + '%' : '—');
+  meterCall.style.width = callPct + '%';
+  meterPut.style.width = putPct + '%';
+  statusEl.textContent = status + (sentimento.atualizado_em ? ' · ' + new Date(Number(sentimento.atualizado_em) * 1000).toLocaleTimeString('pt-BR') : '');
+
+  line.classList.remove('sentimento-call-active', 'sentimento-put-active');
+  if (direcao === 'call') line.classList.add('sentimento-call-active');
+  if (direcao === 'put') line.classList.add('sentimento-put-active');
+  badge.textContent = direcao === 'call' ? 'CALL' : direcao === 'put' ? 'PUT' : (valido ? 'NEUTRO' : 'AGUARDANDO');
+  badge.className = 'badge ' + (direcao === 'call' ? 'badge-green' : direcao === 'put' ? 'badge-red' : 'badge-blue');
+}
+
+function renderSorosStatus(soros) {
+  const div = document.getElementById('sorosStatusDiv');
+  if (!soros.ativo) {
+    div.style.display = 'none';
+    return;
+  }
+  div.style.display = 'block';
+  document.getElementById('sorosNivelAtual').textContent = soros.nivel_atual + '/' + soros.niveis_totais;
+  document.getElementById('sorosLucroSeq').textContent = (soros.lucro_sequencia >= 0 ? '+' : '') + 'R$ ' + Math.abs(soros.lucro_sequencia).toFixed(2);
+  document.getElementById('sorosAcumulado').textContent = 'R$ ' + soros.lucro_acumulado.toFixed(2);
+  document.getElementById('sorosTotalSeq').textContent = soros.total_sequencias;
+}
+
+// ============================================================
+// ABRIR CORRETORA
+// ============================================================
+function carregarCorretora() {
+  const link = document.getElementById('corretoraLink').value.trim();
+  if (!link) { showToast('Informe o link da corretora', 'red'); return; }
+  const frame = document.getElementById('corretora');
+  frame.src = link;
+  frame.style.display = 'block';
+  document.getElementById('chartPlaceholder').style.display = 'none';
+}
+
+function abrirCorretoraNovaAba() {
+  const link = document.getElementById('corretoraLink').value.trim() || 'https://iqoption.com/traderoom';
+  window.open(link, '_blank');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+toggleGaleOpts();
+// A inicialização apenas desenha o estado; o salvamento automático do Soros
+// ocorre quando o usuário realmente altera o controle.
+['cfgNiveisSoros', 'cfgReinvestimentoSoros'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', agendarSalvamentoSoros);
+});
+toggleSorosOpts(false);
+toggleModo();
+renderBackendControls();
+renderTtzZoneOptions(TTZ_DEFAULT_ZONES, ['Events Zone', 'Wine Zone']);
+renderTtzZoneLegend(TTZ_DEFAULT_ZONES);
+renderTtzScheduleRows([]);
+renderTtzScheduleRows([]);
+</script>
+</body>
+</html>
