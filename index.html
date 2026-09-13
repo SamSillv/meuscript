@@ -701,6 +701,14 @@
         </select>
         <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">M1, M5 e M15 usam o mesmo timeframe selecionado para Turbo e Binária; “Ambas” escolhe uma modalidade aberta.</div>
       </div>
+      <div class="input-group">
+        <label class="input-label">MOMENTO DA ENTRADA DO SINAL</label>
+        <select id="cfgEntradaSinalModo" onchange="marcarEntradaSinalEditada()">
+          <option value="mesma_vela">MESMA VELA — entrar onde o sinal foi detectado</option>
+          <option value="proxima_vela">PRÓXIMA VELA — aguardar a abertura seguinte</option>
+        </select>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">Controla sinais novos do script Lua; entradas manuais e Gale não são atrasados.</div>
+      </div>
     </div>
 
     <div class="grid2">
@@ -1536,6 +1544,8 @@ function aplicarConfigBackend(config) {
   if (expiracao && !expiracaoEditada && config.expiracao !== undefined && config.expiracao !== null && document.activeElement !== expiracao) expiracao.value = config.expiracao;
   const modalidade = document.getElementById('cfgModalidade');
   if (modalidade && !modalidadeEditada && config.modalidade && document.activeElement !== modalidade) modalidade.value = config.modalidade;
+  const entradaSinalModo = document.getElementById('cfgEntradaSinalModo');
+  if (entradaSinalModo && !entradaSinalEditada && config.entrada_sinal_modo && document.activeElement !== entradaSinalModo) entradaSinalModo.value = config.entrada_sinal_modo;
   const limite = document.getElementById('cfgLimite');
   if (limite && !limiteEditado && config.limite_diario !== undefined && config.limite_diario !== null && document.activeElement !== limite) limite.value = config.limite_diario;
   const horaIni = document.getElementById('cfgHoraIni');
@@ -1640,6 +1650,7 @@ async function salvarConfig(silencioso = false) {
     valor_entrada: parseFloat(document.getElementById('cfgEntrada').value) || 2,
     expiracao: parseInt(document.getElementById('cfgExpiracao').value) || 1,
     modalidade: document.getElementById('cfgModalidade')?.value || 'ambas',
+    entrada_sinal_modo: document.getElementById('cfgEntradaSinalModo')?.value || 'mesma_vela',
     ativo_manual: document.getElementById('ativoManual')?.value || 'EURUSD',
     atraso_martingale_segundos: parseInt(document.getElementById('cfgAtrasoMartingale').value, 10) || 0,
     martingale_modo: document.getElementById('cfgMartingaleModo').value || 'proxima_vela',
@@ -1679,6 +1690,7 @@ async function salvarConfig(silencioso = false) {
       usarGaleEditada = false;
       expiracaoEditada = false;
       modalidadeEditada = false;
+      entradaSinalEditada = false;
       limiteEditado = false;
       horarioEditado = false;
       stopWinEditado = false;
@@ -1831,6 +1843,7 @@ let entradaEditada = false;
 let usarGaleEditada = false;
 let expiracaoEditada = false;
 let modalidadeEditada = false;
+let entradaSinalEditada = false;
 let limiteEditado = false;
 let horarioEditado = false;
 let stopWinEditado = false;
@@ -1878,6 +1891,10 @@ function marcarExpiracaoEditada() {
 
 function marcarModalidadeEditada() {
   modalidadeEditada = true;
+}
+
+function marcarEntradaSinalEditada() {
+  entradaSinalEditada = true;
 }
 
 function marcarLimiteEditado() {
