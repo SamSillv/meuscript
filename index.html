@@ -1082,11 +1082,9 @@ plot_shape(close > open, 'CALL', shape_style.triangleup, shape_size.large, '#00f
 // CONFIG
 // ============================================================
 const DEFAULT_BACKEND_URL = (() => {
-  const protocolo = window.location.protocol;
-  const url = (protocolo === 'http:' || protocolo === 'https:')
-    ? window.location.origin
-    : 'http://192.95.37.8:2896/';
-  return url.replace(/\/$/, '');
+  // O painel pode estar hospedado em outro domínio. Não use
+  // window.location.origin, pois isso faria a API apontar para o painel.
+  return 'http://192.95.37.8:2896';
 })();
 
 const API = {
