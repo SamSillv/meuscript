@@ -391,6 +391,37 @@
   .ttz-auto-session.warning { color:var(--yellow); border-color:rgba(245,158,11,0.28); background:rgba(245,158,11,0.06); }
   .ttz-auto-session.warning .ttz-session-status-dot { background:var(--yellow); box-shadow:0 0 9px var(--yellow); }
   @media (max-width:390px) { .ttz-state-grid, .ttz-zone-grid { grid-template-columns:1fr; } .ttz-zone-legend { grid-template-columns:1fr 1fr; } .ttz-live-source { display:none; } }
+
+  /* TELEGRAM — segue o mesmo padrão de .app, .card e .card-title das demais abas */
+  .telegram-wide { width:100%; }
+  .telegram-hero { text-align:left; padding:0; margin-bottom:16px; }
+  .telegram-hero h2 { font-family:'Orbitron',monospace; color:var(--green); font-size:11px; letter-spacing:3px; margin:0 0 8px; }
+  .telegram-hero p { color:rgba(255,255,255,.45); font-size:12px; line-height:1.45; }
+  .telegram-grid { display:block; }
+  .telegram-panel { padding:20px; }
+  .telegram-panel h3 { color:var(--green); font-family:'Orbitron',monospace; font-size:11px; letter-spacing:3px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .telegram-panel h3::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+  .telegram-status { display:flex; align-items:center; gap:8px; color:rgba(255,255,255,.6); font-size:12px; margin:8px 0 12px; }
+  .telegram-status-dot { width:9px; height:9px; border-radius:50%; background:#ef4444; }
+  .telegram-status-dot.ok { background:#00ff88; box-shadow:0 0 10px #00ff88; }
+  .telegram-tabs { display:flex; flex-direction:column; gap:6px; margin:8px 0 12px; }
+  .telegram-tab { width:100%; text-align:left; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.2); color:rgba(255,255,255,.55); padding:11px 13px; border-radius:10px; cursor:pointer; font-size:12px; transition:all .2s; }
+  .telegram-tab::before { content:'›'; color:var(--green); margin-right:9px; font-size:16px; vertical-align:-1px; }
+  .telegram-tab.active { color:#fff; border-color:var(--green); background:rgba(0,255,136,.1); box-shadow:0 0 0 1px rgba(0,255,136,.08); }
+  .telegram-directional-link { display:inline-flex; align-items:center; gap:7px; color:var(--blue); font-size:12px; text-decoration:none; margin:2px 0 14px; }
+  .telegram-directional-link:hover { color:#fff; text-decoration:underline; }
+  .telegram-editor { width:100%; min-height:260px; resize:vertical; padding:14px; background:#050a12; border:1px solid rgba(0,255,136,0.24); border-radius:12px; color:#d9ffe9; font:12px/1.55 monospace; outline:none; box-sizing:border-box; }
+  .telegram-editor:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(0,255,136,0.1); }
+  .telegram-markers { max-height:160px; overflow:auto; margin-top:10px; border:1px solid rgba(255,255,255,.08); border-radius:8px; }
+  .telegram-marker { display:flex; justify-content:space-between; gap:10px; padding:7px 9px; font-size:10px; border-bottom:1px solid rgba(255,255,255,.06); }
+  .telegram-marker code { color:#c084fc; }
+  .telegram-marker span { color:rgba(255,255,255,.45); text-align:right; }
+  .telegram-table { width:100%; border-collapse:collapse; font-size:10px; margin-top:10px; }
+  .telegram-table th,.telegram-table td { padding:7px 5px; border-bottom:1px solid rgba(255,255,255,.07); text-align:left; }
+  .telegram-table th { color:#c084fc; font-family:'Orbitron',monospace; font-size:9px; }
+  .telegram-event { padding:8px; margin-top:6px; border-left:2px solid #a855f7; background:rgba(168,85,247,.07); font-size:11px; }
+  @media(max-width:390px){ .telegram-panel{padding:16px;} .telegram-panel .grid2{grid-template-columns:1fr;} }
+
 </style>
 </head>
 <body>
@@ -417,7 +448,7 @@
       </div>
       <div class="input-group">
         <label class="input-label">BACKEND URL</label>
-        <input type="text" id="backendUrl" placeholder="http://localhost:5000" value="http://localhost:5000">
+        <input type="text" id="backendUrl" placeholder="http://192.95.37.8:2896/" value="http://192.95.37.8:2896/">
       </div>
       <div class="input-group">
         <label class="input-label">TIPO DE CONTA</label>
@@ -950,6 +981,52 @@ plot_shape(close > open, 'CALL', shape_style.triangleup, shape_size.large, '#00f
   <button class="btn btn-start" onclick="salvarConfigTtz()">💾 SALVAR CONFIGURAÇÃO TTZ</button>
 </div>
 
+
+<!-- ===== TELEGRAM ===== -->
+<div class="section" id="sectionTelegram">
+  <div class="telegram-wide">
+    <div class="telegram-hero"><h2>Integração Telegram</h2><p>Conecte o robô aos seus grupos para ler sinais e enviar resultados automaticamente.</p></div>
+    <div class="telegram-grid">
+      <div class="card telegram-panel">
+        <h3>➜ Enviar sinais</h3>
+        <div class="telegram-status"><span class="telegram-status-dot" id="tgSendDot"></span><span id="tgSendStatus">Não configurado</span></div>
+        <div class="grid2">
+          <div class="input-group"><label class="input-label">BOT TOKEN</label><input type="password" id="tgBotToken" placeholder="Token do seu bot"></div>
+          <a class="telegram-directional-link" href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer">🔗 Criar ou obter o Bot Token no BotFather</a>
+          <div class="input-group"><label class="input-label">CHAT ID</label><input id="tgSendChatId" placeholder="ID do chat"></div>
+        </div>
+        <div class="telegram-tabs" id="tgTemplateTabs"></div>
+        <textarea class="telegram-editor" id="tgTemplateEditor" placeholder="Texto da mensagem"></textarea>
+        <div class="toggle-row"><span class="toggle-label">Ativar mensagem selecionada</span><label class="toggle"><input type="checkbox" id="tgTemplateActive" checked onchange="telegramTemplateDirty=true"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Enviar print do Meu Script</span><label class="toggle"><input type="checkbox" id="tgSendScreenshot"><span class="toggle-slider"></span></label></div>
+        <div class="input-group"><label class="input-label">TEXTO CALL</label><input id="tgCallText" value="-CALL"></div>
+        <div class="input-group"><label class="input-label">TEXTO PUT</label><input id="tgPutText" value="-PUT"></div>
+        <div class="grid2"><div class="input-group"><label class="input-label">PLACAR A CADA (HORAS)</label><input type="number" id="tgResultInterval" min="0" max="168" value="0"></div><div class="input-group"><label class="input-label">CABEÇALHO</label><input id="tgScoreHeader" value=">>>>> PLACAR <<<<<"></div></div>
+        <button class="btn btn-start" onclick="salvarTelegram()">💾 SALVAR CONFIGURAÇÃO</button>
+        <button class="btn btn-ghost" onclick="testarTelegram()">📤 ENVIAR MENSAGEM DE TESTE</button>
+      </div>
+      <div class="card telegram-panel">
+        <h3>RECEBER SINAIS</h3>
+        <div class="input-group"><label class="input-label">API ID — NÚMERO DA APLICAÇÃO</label><input id="tgApiId" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex.: 12345678"></div>
+        <a class="telegram-directional-link" aria-label="Abrir my.telegram.org para obter API ID e API HASH" href="https://my.telegram.org" target="_blank" rel="noopener noreferrer">🔗 Obter API ID e API HASH em my.telegram.org</a>
+        <div class="input-group"><label class="input-label">API HASH</label><input type="password" id="tgApiHash" placeholder="API Hash"></div>
+        <div class="input-group"><label class="input-label">TELEFONE DA CONTA</label><input id="tgPhone" placeholder="+55..." autocomplete="tel"></div>
+        <div class="toggle-row"><span class="toggle-label">Conectar ao iniciar o programa</span><label class="toggle"><input type="checkbox" id="tgReceiveEnabled"><span class="toggle-slider"></span></label></div>
+        <button class="btn btn-broker" onclick="iniciarTelegramLeitura()">🔗 INICIAR LEITURA</button>
+        <div class="grid2" style="margin-top:8px"><div class="input-group"><label class="input-label">CÓDIGO TELEGRAM</label><input id="tgVerifyCode" placeholder="Código recebido"></div><div class="input-group"><label class="input-label">SENHA 2FA (SE HOUVER)</label><input type="password" id="tgVerifyPassword"></div></div>
+        <button class="btn btn-ghost" onclick="verificarTelegram()">✅ CONFIRMAR CÓDIGO</button>
+        <div class="telegram-status"><span class="telegram-status-dot" id="tgReceiveDot"></span><span id="tgReceiveStatus">Leitura desligada</span></div>
+        <div class="input-group"><label class="input-label">REGRAS DO CHAT SELECIONADO</label><select id="tgChatSelect"><option value="">Nenhum chat carregado</option></select></div>
+        <div class="input-group"><label class="input-label">PALAVRAS ACEITAS</label><input id="tgAcceptedWords" value="CALL, PUT, COMPRA, VENDA" oninput="telegramRuleDirty=true"></div>
+        <div class="input-group"><label class="input-label">PALAVRAS REJEITADAS</label><input id="tgRejectedWords" placeholder="Ex.: VIP, OTC" oninput="telegramRuleDirty=true"></div>
+        <div class="toggle-row"><span class="toggle-label">Executar automaticamente sinais recebidos</span><label class="toggle"><input type="checkbox" id="tgAutoTrade"><span class="toggle-slider"></span></label></div>
+        <button class="btn btn-start" onclick="salvarTelegramRegra()">➕ SALVAR REGRA DO CHAT</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px"><div class="card-title">EVENTOS TELEGRAM</div><div id="tgEvents"><div class="empty-state">Aguardando eventos...</div></div></div>
+  </div>
+</div>
+
 <!-- ===== CHART ===== -->
 <div class="section" id="sectionChart" style="display:flex;flex-direction:column;height:calc(100vh - 140px);padding:0;margin:0">
   <div class="chart-card" style="height:100%;margin-bottom:0;border-radius:0;flex:1;">
@@ -987,6 +1064,10 @@ plot_shape(close > open, 'CALL', shape_style.triangleup, shape_size.large, '#00f
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l5 3"/><path d="M4 12H2M22 12h-2"/></svg>
     TTZ
   </div>
+  <div class="nav-item" id="nav-telegram" onclick="showSection('Telegram')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 3L3 10.5l7 2.5L12.5 20 15 14l6-11z"/><path d="M10 13l5-4"/></svg>
+    TELEGRAM
+  </div>
   <div class="nav-item" id="nav-chart" onclick="showSection('Chart')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     GRÁFICO
@@ -1000,11 +1081,21 @@ plot_shape(close > open, 'CALL', shape_style.triangleup, shape_size.large, '#00f
 // ============================================================
 // CONFIG
 // ============================================================
+const DEFAULT_BACKEND_URL = (() => {
+  const protocolo = window.location.protocol;
+  const url = (protocolo === 'http:' || protocolo === 'https:')
+    ? window.location.origin
+    : 'http://192.95.37.8:2896/';
+  return url.replace(/\/$/, '');
+})();
+
 const API = {
-  base: 'http://localhost:5000',
+  // Quando o HTML é servido pelo Flask, o frontend chama automaticamente a
+  // API na mesma origem. O fallback mantém compatibilidade com file://.
+  base: DEFAULT_BACKEND_URL,
   setBase(url) {
     const valor = String(url || '').trim().replace(/\/$/, '');
-    this.base = valor || 'http://localhost:5000';
+    this.base = valor || DEFAULT_BACKEND_URL;
   },
   async _json(response) {
     const texto = await response.text();
@@ -1191,6 +1282,10 @@ async function startBot() {
   try {
     // Garante que os valores atualmente exibidos, inclusive os stops,
     // sejam enviados antes de iniciar uma nova sessão.
+    if (document.getElementById('tgReceiveEnabled')?.checked) {
+      const telegramSync = await API.post('/api/telegram/config', coletarTelegram());
+      if (!telegramSync.ok) { showToast('❌ ' + (telegramSync.msg || 'Não foi possível configurar o Telegram'), 'red'); return; }
+    }
     const configOk = await salvarConfig(true);
     if (!configOk) return;
     const r = await API.post('/api/start', {});
@@ -1553,11 +1648,11 @@ function aplicarConfigBackend(config) {
   const horaFim = document.getElementById('cfgHoraFim');
   if (horaFim && !horarioEditado && config.horario_fim && document.activeElement !== horaFim) horaFim.value = config.horario_fim;
   const atrasoMartingale = document.getElementById('cfgAtrasoMartingale');
-  if (atrasoMartingale && config.atraso_martingale_segundos !== undefined && config.atraso_martingale_segundos !== null) {
+  if (atrasoMartingale && !atrasoMartingaleEditado && config.atraso_martingale_segundos !== undefined && config.atraso_martingale_segundos !== null && document.activeElement !== atrasoMartingale) {
     atrasoMartingale.value = config.atraso_martingale_segundos;
   }
   const martingaleModo = document.getElementById('cfgMartingaleModo');
-  if (martingaleModo && config.martingale_modo) {
+  if (martingaleModo && !martingaleModoEditado && config.martingale_modo && document.activeElement !== martingaleModo) {
     martingaleModo.value = config.martingale_modo;
   }
   const stopWin = document.getElementById('cfgStopWin');
@@ -1612,11 +1707,11 @@ function aplicarConfigBackend(config) {
     reinvSoros.value = config.reinvestimento_soros;
   }
   const tempoAntesNoticia = document.getElementById('cfgTempoAntesNoticia');
-  if (tempoAntesNoticia && config.tempo_antes_noticia !== undefined && config.tempo_antes_noticia !== null) {
+  if (tempoAntesNoticia && !noticiasConfigEditada && config.tempo_antes_noticia !== undefined && config.tempo_antes_noticia !== null && document.activeElement !== tempoAntesNoticia) {
     tempoAntesNoticia.value = config.tempo_antes_noticia;
   }
   const tempoDepoisNoticia = document.getElementById('cfgTempoDepoisNoticia');
-  if (tempoDepoisNoticia && config.tempo_depois_noticia !== undefined && config.tempo_depois_noticia !== null) {
+  if (tempoDepoisNoticia && !noticiasConfigEditada && config.tempo_depois_noticia !== undefined && config.tempo_depois_noticia !== null && document.activeElement !== tempoDepoisNoticia) {
     tempoDepoisNoticia.value = config.tempo_depois_noticia;
   }
 }
@@ -2116,6 +2211,7 @@ function applyStatus(s) {
     });
     aplicarConfigTtz(ttzConfigVisual);
     renderTtzStatus(s.ttz);
+    aplicarTelegramStatus(s.telegram);
 
     if (s.saldo !== undefined && s.saldo !== null) {
         const saldoStr = 'R$ ' + Number(s.saldo).toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -2177,6 +2273,90 @@ function applyStatus(s) {
 
   } catch(e) {}
 }
+
+
+// ============================================================
+// TELEGRAM
+// ============================================================
+let telegramTemplates = {};
+let telegramActiveTemplates = {};
+let telegramTemplateKind = 'entry';
+let telegramTemplateDirty = false;
+let telegramRuleDirty = false;
+const telegramDirtyFields = new Set();
+function marcarTelegramCampoEditado(event) { if (event?.target?.id) telegramDirtyFields.add(event.target.id); }
+function limparCamposTelegramEditados() { telegramDirtyFields.clear(); }
+const telegramTemplateLabels = {waiting:'Em espera', entry:'Na entrada', win:'Em ganho', draw:'Em empate', loss:'Em perda'};
+function tgEscape(v){ return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+function tgSelectTemplate(kind){
+  const changed = telegramTemplateKind !== kind;
+  telegramTemplateKind = kind;
+  document.querySelectorAll('.telegram-tab').forEach(x => x.classList.toggle('active', x.dataset.kind === kind));
+  const editor = document.getElementById('tgTemplateEditor');
+  if (editor && (changed || document.activeElement !== editor)) editor.value = telegramTemplates[kind] || '';
+  const active = document.getElementById('tgTemplateActive');
+  if (active && (changed || !telegramTemplateDirty)) active.checked = telegramActiveTemplates[kind] !== false;
+  if (changed) telegramTemplateDirty = false;
+}
+function renderTelegramStatus(tg){
+  if (!tg) return;
+  telegramTemplates = Object.assign({}, telegramTemplates, tg.config?.templates || {});
+  telegramActiveTemplates = Object.assign({}, telegramActiveTemplates, tg.config?.active_templates || {});
+  const tabs = document.getElementById('tgTemplateTabs');
+  if (tabs && !tabs.children.length) tabs.innerHTML = Object.entries(telegramTemplateLabels).map(([k,v]) => `<button class="telegram-tab" data-kind="${k}" onclick="tgSelectTemplate('${k}')">${v}</button>`).join('');
+  tgSelectTemplate(telegramTemplateKind);
+  const cfg=tg.config||{};
+  const savedApiId = localStorage.getItem('meurobo.telegram.api_id') || '';
+  const savedPhone = localStorage.getItem('meurobo.telegram.phone') || '';
+  const fields={tgSendChatId:cfg.send_chat_id,tgApiId:cfg.api_id || savedApiId,tgPhone:cfg.phone || savedPhone,tgCallText:cfg.call_text||'-CALL',tgPutText:cfg.put_text||'-PUT',tgResultInterval:cfg.send_results_interval_hours,tgScoreHeader:cfg.score_header};
+  Object.entries(fields).forEach(([id,v])=>{const el=document.getElementById(id); if(el && !telegramDirtyFields.has(id) && document.activeElement!==el && v!==undefined && v!==null && String(v).length>0) el.value=v;});
+  if (!telegramRuleDirty) {
+    const accepted = document.getElementById('tgAcceptedWords');
+    const rejected = document.getElementById('tgRejectedWords');
+    if (accepted && !telegramDirtyFields.has('tgAcceptedWords') && cfg.accepted_words !== undefined && document.activeElement !== accepted) accepted.value = cfg.accepted_words;
+    if (rejected && !telegramDirtyFields.has('tgRejectedWords') && cfg.rejected_words !== undefined && document.activeElement !== rejected) rejected.value = cfg.rejected_words;
+  }
+  const receiveToggle = document.getElementById('tgReceiveEnabled');
+  const autoTradeToggle = document.getElementById('tgAutoTrade');
+  const screenshotToggle = document.getElementById('tgSendScreenshot');
+  if (receiveToggle && !telegramDirtyFields.has('tgReceiveEnabled') && cfg.receive_enabled !== undefined) receiveToggle.checked = Boolean(cfg.receive_enabled);
+  if (autoTradeToggle && !telegramDirtyFields.has('tgAutoTrade') && cfg.auto_trade_received !== undefined) autoTradeToggle.checked = Boolean(cfg.auto_trade_received);
+  if (screenshotToggle && !telegramDirtyFields.has('tgSendScreenshot') && cfg.send_screenshot !== undefined) screenshotToggle.checked = Boolean(cfg.send_screenshot);
+  const sendDot=document.getElementById('tgSendDot'); sendDot?.classList.toggle('ok', !!tg.send_configured); document.getElementById('tgSendStatus').textContent=tg.send_configured?'Conectado':'Não configurado';
+  const recvDot=document.getElementById('tgReceiveDot'); recvDot?.classList.toggle('ok', !!tg.connected); document.getElementById('tgReceiveStatus').textContent=tg.connected?'Leitura conectada':(tg.receive_enabled?'Conectando...':'Leitura desligada');
+  const chats=document.getElementById('tgChatSelect');
+  if (chats && Array.isArray(tg.chats) && tg.chats.length) {
+    const chatSignature = tg.chats.map(c => `${c.id}|${c.name || ''}`).join('\n');
+    const selectedChat = chats.value;
+    if (chats.dataset.signature !== chatSignature) {
+      chats.innerHTML = tg.chats.map(c => `<option value="${tgEscape(c.id)}">${tgEscape(c.name||c.id)} (${tgEscape(c.id)})</option>`).join('');
+      chats.dataset.signature = chatSignature;
+    }
+    if (selectedChat && [...chats.options].some(option => option.value === selectedChat)) chats.value = selectedChat;
+  }
+  const events=document.getElementById('tgEvents'); if(events && Array.isArray(tg.events)) events.innerHTML=tg.events.slice(0,12).map(e=>`<div class="telegram-event"><b>${tgEscape(e.time)} · ${tgEscape(e.kind)}</b><br>${tgEscape(e.message)}</div>`).join('') || '<div class="empty-state">Aguardando eventos...</div>';
+}
+function coletarTelegram(){
+  telegramTemplates[telegramTemplateKind]=document.getElementById('tgTemplateEditor')?.value||'';
+  telegramActiveTemplates[telegramTemplateKind]=!!document.getElementById('tgTemplateActive')?.checked;
+  const apiId = document.getElementById('tgApiId')?.value?.trim() || localStorage.getItem('meurobo.telegram.api_id') || '';
+  const phone = document.getElementById('tgPhone')?.value?.trim() || localStorage.getItem('meurobo.telegram.phone') || '';
+  if (apiId) localStorage.setItem('meurobo.telegram.api_id', apiId);
+  if (phone) localStorage.setItem('meurobo.telegram.phone', phone);
+  return {send_enabled:true,receive_enabled:!!document.getElementById('tgReceiveEnabled')?.checked,auto_trade_received:!!document.getElementById('tgAutoTrade')?.checked,bot_token:document.getElementById('tgBotToken')?.value||'',send_chat_id:document.getElementById('tgSendChatId')?.value||'',api_id:apiId,api_hash:document.getElementById('tgApiHash')?.value||'',phone:phone,default_asset:'',accepted_words:document.getElementById('tgAcceptedWords')?.value||'',rejected_words:document.getElementById('tgRejectedWords')?.value||'',send_results_interval_hours:parseInt(document.getElementById('tgResultInterval')?.value||0,10)||0,score_header:document.getElementById('tgScoreHeader')?.value||'',send_screenshot:!!document.getElementById('tgSendScreenshot')?.checked,templates:telegramTemplates,active_templates:telegramActiveTemplates};
+}
+async function salvarTelegram(){const r=await API.post('/api/telegram/config',coletarTelegram()); if(r.ok){telegramTemplateDirty=false;telegramRuleDirty=false;limparCamposTelegramEditados();renderTelegramStatus(r.telegram);showToast('✅ TELEGRAM SALVO','green')}else showToast('❌ '+(r.msg||'Erro Telegram'),'red');}
+async function testarTelegram(){const r=await API.post('/api/telegram/test',{});showToast(r.ok?'✅ TESTE ENVIADO':'❌ '+(r.msg||'Falha no teste'),r.ok?'green':'red');}
+async function iniciarTelegramLeitura(){await salvarTelegram();const r=await API.post('/api/telegram/start',{});showToast(r.ok?'📡 LEITURA INICIADA':'❌ '+(r.msg||'Falha'),r.ok?'green':'red');}
+async function verificarTelegram(){const r=await API.post('/api/telegram/verify',{code:document.getElementById('tgVerifyCode')?.value||'',password:document.getElementById('tgVerifyPassword')?.value||''});showToast(r.ok?'✅ TELEGRAM AUTORIZADO':'❌ '+(r.msg||'Código inválido'),r.ok?'green':'red');}
+async function salvarTelegramRegra(){const tg=coletarTelegram();tg.rules=[{chat_id:document.getElementById('tgChatSelect')?.value||'',chat_name:document.getElementById('tgChatSelect')?.selectedOptions?.[0]?.text||'',accepted_words:tg.accepted_words,rejected_words:tg.rejected_words,signal_type:'CALL/PUT',second_step:'none',active:true}];const r=await API.post('/api/telegram/config',tg);if(r.ok) { telegramRuleDirty=false; limparCamposTelegramEditados(); } showToast(r.ok?'✅ REGRA SALVA':'❌ '+(r.msg||'Erro'),'green');}
+function instalarProtecaoCamposTelegram(){
+  ['tgBotToken','tgSendChatId','tgApiId','tgApiHash','tgPhone','tgReceiveEnabled','tgAutoTrade','tgSendScreenshot','tgVerifyCode','tgVerifyPassword','tgCallText','tgPutText','tgResultInterval','tgScoreHeader','tgDefaultAsset','tgAcceptedWords','tgRejectedWords'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.telegramDirtyHook) { el.addEventListener('input', marcarTelegramCampoEditado); el.addEventListener('change', marcarTelegramCampoEditado); el.dataset.telegramDirtyHook = '1'; }
+  });
+}
+function aplicarTelegramStatus(tg){instalarProtecaoCamposTelegram();renderTelegramStatus(tg);}
 
 // ============================================================
 // WEBSOCKET
